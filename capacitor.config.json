@@ -1,0 +1,15 @@
+{
+  "appId": "uk.co.ateliermulliner.calltoartists",
+  "appName": "Call to Artists",
+  "webDir": "www",
+  "android": {
+    "backgroundColor": "#17130F"
+  },
+  "plugins": {
+    "CapacitorHttp": { "enabled": true },
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_cta",
+      "iconColor": "#C9A45C"
+    }
+  }
+}
