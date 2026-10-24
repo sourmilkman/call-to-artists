@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Oval miniature frame with an hourglass: the deadline. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <path android:strokeColor="#C9A45C" android:strokeWidth="2.6" android:fillColor="#00000000"
+        android:pathData="M54,27 A20,27 0 1,1 53.99,27 Z"/>
+    <path android:strokeColor="#8F7440" android:strokeWidth="1" android:fillColor="#00000000"
+        android:pathData="M54,31 A16.5,23 0 1,1 53.99,31 Z"/>
+    <path android:fillColor="#C9A45C" android:pathData="M45,40 L63,40 L63,42 L45,42 Z"/>
+    <path android:fillColor="#C9A45C" android:pathData="M45,66 L63,66 L63,68 L45,68 Z"/>
+    <path android:fillColor="#C9A45C" android:pathData="M47,43 L61,43 L54,54 Z"/>
+    <path android:fillColor="#EFE7D8" android:pathData="M54,56 L60.5,65 L47.5,65 Z"/>
+</vector>

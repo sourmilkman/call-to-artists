@@ -1,0 +1,964 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#17130F">
+<title>Call to Artists</title>
+<style>
+:root{
+  --ink:#17130F; --panel:#211B16; --panel2:#2A231C; --line:#3A3027;
+  --ivory:#EFE7D8; --muted:#A89C88; --faint:#7A6F60;
+  --gold:#C9A45C; --gold-dim:#8F7440; --red:#D9725B; --amber:#D9A54A; --green:#8FB07A;
+  --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --top:max(env(safe-area-inset-top),28px); --bottom:max(env(safe-area-inset-bottom),10px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--ink);color:var(--ivory);font:15px/1.45 var(--sans)}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--gold)}
+.top{position:sticky;top:0;z-index:5;background:linear-gradient(var(--ink) 80%,transparent);
+  padding:calc(var(--top) + 6px) 18px 10px;display:flex;align-items:flex-end;gap:12px}
+.brand{flex:1;min-width:0}
+.brand h1{font:600 26px/1.1 var(--serif);margin:0;letter-spacing:.3px}
+.brand h1 em{color:var(--gold);font-style:italic;font-weight:500}
+.brand p{margin:4px 0 0;color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.icon{width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:var(--panel);display:grid;place-items:center;font-size:19px}
+.icon.spin{animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+main{padding:0 14px calc(90px + var(--bottom))}
+.view{display:none}.view.active{display:block}
+.toolbar input{width:100%;padding:11px 14px;border-radius:12px;border:1px solid var(--line);background:var(--panel);outline:none}
+.toolbar input:focus{border-color:var(--gold-dim)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:12px 0 6px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;padding:7px 13px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--muted);font-size:13px}
+.chip.on{background:var(--gold);border-color:var(--gold);color:var(--ink);font-weight:600}
+.chip .n{opacity:.7;margin-left:4px}
+.list{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+.card{display:flex;gap:14px;padding:14px;border-radius:16px;background:var(--panel);border:1px solid var(--line);text-align:left;width:100%}
+.card:active{background:var(--panel2)}
+.count{flex:none;width:58px;text-align:center;border-right:1px solid var(--line);padding-right:12px;display:flex;flex-direction:column;justify-content:center}
+.count b{font:600 28px/1 var(--serif);color:var(--gold)}
+.count small{display:block;color:var(--muted);font-size:11px;margin-top:3px}
+.count.soon b{color:var(--amber)}.count.urgent b{color:var(--red)}
+.count.watch b{font-size:13px;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+.card h3{font:600 16px/1.25 var(--serif);margin:0}
+.card .org{color:var(--muted);font-size:12.5px;margin:3px 0 0}
+.card .next{font-size:13px;margin:6px 0 0}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.tag{font-size:11px;padding:2px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.tag.gold{border-color:var(--gold-dim);color:var(--gold)}
+.tag.new{background:var(--gold);color:var(--ink);border-color:var(--gold);font-weight:700}
+.tag.warn{border-color:#6b4a2a;color:var(--amber)}
+.empty{color:var(--muted);text-align:center;padding:40px 20px}
+.section-h{font:600 13px var(--sans);color:var(--gold);letter-spacing:1.2px;text-transform:uppercase;margin:22px 4px 8px}
+.build{color:var(--faint);font-size:11px;text-align:center;margin:24px 0 6px}
+.fab{position:fixed;right:18px;bottom:calc(76px + var(--bottom));width:56px;height:56px;border-radius:18px;border:none;background:var(--gold);color:var(--ink);font-size:30px;line-height:1;box-shadow:0 8px 24px rgba(0,0,0,.45);z-index:6}
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:6;display:flex;background:rgba(23,19,15,.96);border-top:1px solid var(--line);padding:6px 6px var(--bottom);backdrop-filter:blur(8px)}
+.tabs button{flex:1;background:none;border:none;padding:8px 0 6px;color:var(--faint);font-size:12px;display:flex;flex-direction:column;align-items:center;gap:2px}
+.tabs button span{font-size:18px}
+.tabs button.on{color:var(--gold)}
+.sheet{position:fixed;inset:0;z-index:20}
+.sheet.hidden{display:none}
+.sheet-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.6)}
+.sheet-panel{position:absolute;left:0;right:0;bottom:0;max-height:92vh;overflow-y:auto;background:var(--ink);border-top:1px solid var(--gold-dim);border-radius:22px 22px 0 0;padding:8px 18px calc(24px + var(--bottom));animation:up .22s ease-out}
+@keyframes up{from{transform:translateY(40px);opacity:.4}}
+.sheet-x{position:absolute;top:10px;right:12px;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--panel);font-size:20px;line-height:1;color:var(--muted)}
+.sheet h2{padding-right:40px}
+.sheet-grip{width:44px;height:4px;border-radius:2px;background:var(--line);margin:4px auto 14px}
+.sheet h2{font:600 22px/1.2 var(--serif);margin:0 0 4px}
+.sub{color:var(--muted);font-size:13px;margin:0 0 12px}
+.row-btns{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.btn{padding:10px 14px;border-radius:12px;border:1px solid var(--line);background:var(--panel);font-size:14px}
+.btn.primary{background:var(--gold);border-color:var(--gold);color:var(--ink);font-weight:600}
+.btn.ghost{background:none}
+.btn.danger{border-color:#5a2b22;color:var(--red)}
+.btn.small{padding:6px 10px;font-size:12.5px;border-radius:10px}
+.btn.done{border-color:var(--gold-dim);color:var(--gold)}
+.facts{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:13.5px;margin:14px 0}
+.facts dt{color:var(--muted)}.facts dd{margin:0}
+.ms{border:1px solid var(--line);border-radius:14px;overflow:hidden;margin:8px 0}
+.ms-row{display:flex;align-items:center;gap:10px;padding:11px 12px;border-top:1px solid var(--line)}
+.ms-row:first-child{border-top:none}
+.ms-row .d{flex:1;min-width:0}
+.ms-row .d b{display:block;font-weight:600;font-size:14px}
+.ms-row .d small{color:var(--muted);font-size:12.5px}
+.ms-row.past{opacity:.45}
+.statuses{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+label.f{display:block;font-size:12.5px;color:var(--muted);margin:12px 0 4px}
+.in{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--panel);outline:none}
+.in:focus{border-color:var(--gold-dim)}
+textarea.in{min-height:80px;resize:vertical}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.ms-edit{border:1px solid var(--line);border-radius:12px;padding:10px;margin:8px 0;background:var(--panel)}
+.note{background:var(--panel);border-left:3px solid var(--gold-dim);padding:10px 12px;border-radius:0 10px 10px 0;font-size:13.5px;color:var(--ivory);margin:10px 0}
+.note.warn{border-left-color:var(--amber)}
+.set{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:4px 14px;margin-bottom:12px}
+.set-row{display:flex;align-items:center;gap:10px;padding:12px 0;border-top:1px solid var(--line)}
+.set-row:first-child{border-top:none}
+.set-row .t{flex:1;min-width:0}.set-row .t small{display:block;color:var(--muted);font-size:12px}
+.switch{width:46px;height:26px;border-radius:13px;background:var(--line);border:none;position:relative;flex:none}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:var(--ivory);transition:left .15s}
+.switch.on{background:var(--gold)}.switch.on::after{left:23px}
+table.ledger{width:100%;border-collapse:collapse;font-size:13px}
+table.ledger td,table.ledger th{padding:8px 4px;border-bottom:1px solid var(--line);text-align:right}
+table.ledger td:first-child,table.ledger th:first-child{text-align:left}
+table.ledger th{color:var(--muted);font-weight:500}
+table.ledger tr.tot td{font-weight:700;color:var(--gold);border-bottom:none}
+.cal-opt{display:flex;align-items:center;gap:10px;width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--panel);margin:6px 0;text-align:left}
+.dot{width:12px;height:12px;border-radius:50%;flex:none}
+#toast{position:fixed;left:50%;bottom:calc(150px + var(--bottom));transform:translateX(-50%) translateY(20px);background:var(--ivory);color:var(--ink);padding:10px 16px;border-radius:12px;font-size:14px;opacity:0;pointer-events:none;transition:.2s;z-index:40;max-width:88vw;text-align:center}
+#toast.show{opacity:1;transform:translateX(-50%)}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">
+    <h1>Call to <em>Artists</em></h1>
+    <p id="headline">Loading…</p>
+  </div>
+  <button id="btnRefresh" class="icon" aria-label="Check Artquest for new calls">↻</button>
+</header>
+
+<main>
+  <section id="view-calls" class="view active">
+    <div class="toolbar"><input id="q" type="search" placeholder="Search calls, societies, venues" autocomplete="off"></div>
+    <div class="chips" id="filterChips"></div>
+    <div id="callList" class="list"></div>
+    <p class="build" data-build></p>
+  </section>
+  <section id="view-tracker" class="view"><div id="trackerList"></div></section>
+  <section id="view-ledger" class="view"><div id="ledger"></div></section>
+  <section id="view-settings" class="view"><div id="settings"></div></section>
+</main>
+
+<button id="fab" class="fab" aria-label="Add a call">+</button>
+
+<nav class="tabs" id="tabs">
+  <button data-view="calls" class="on"><span>✦</span>Calls</button>
+  <button data-view="tracker"><span>◷</span>Tracker</button>
+  <button data-view="ledger"><span>£</span>Ledger</button>
+  <button data-view="settings"><span>⚙</span>Settings</button>
+</nav>
+
+<div id="sheet" class="sheet hidden">
+  <div class="sheet-backdrop" data-close></div>
+  <div class="sheet-panel"><div class="sheet-grip"></div><button class="sheet-x" data-close aria-label="Close">×</button><div id="sheetBody"></div></div>
+</div>
+<div id="toast"></div>
+
+<script src="capacitor.js"></script>
+<script>
+'use strict';
+/* =========================================================
+   Call to Artists — personal open-call deadline tracker
+   ========================================================= */
+const BUILD = 'v0.1.0 · build 1 · 2026-10-24';
+const SEED_VERSION = 1;
+const AQ_URL = 'https://artquest.org.uk/opportunities/';
+const STORE_KEY = 'cta.data.v1';
+
+/* ---------- Native plugins (Android) / browser fallback ---------- */
+const CAP = window.Capacitor;
+const isNative = !!(CAP && CAP.isNativePlatform && CAP.isNativePlatform());
+const P = {};
+if (isNative) {
+  P.Prefs = CAP.registerPlugin('Preferences');
+  P.Notif = CAP.registerPlugin('LocalNotifications');
+  P.Cta = CAP.registerPlugin('CtaNative');
+  P.Http = window.capacitorExports && window.capacitorExports.CapacitorHttp;
+}
+
+/* ---------- Vocabulary ---------- */
+const MT = {
+  open: 'Submissions open', deadline: 'Entry deadline', notify: 'Notification',
+  receiving: 'Receiving / handing-in', collection: 'Collection', pv: 'Private view',
+  exhibition: 'Exhibition', other: 'Other date'
+};
+const MT_SHORT = { open:'Opens', deadline:'Deadline', notify:'Results', receiving:'Hand-in', collection:'Collect', pv:'Private view', exhibition:'Exhibition', other:'Date' };
+const REMIND_TYPES = ['deadline', 'receiving', 'open'];
+const STATUSES = [
+  ['', 'Not tracking'], ['interested', 'Interested'], ['preparing', 'Preparing'], ['submitted', 'Submitted'],
+  ['preselected', 'Pre-selected'], ['selected', 'Selected'], ['rejected', 'Not selected'],
+  ['delivered', 'Delivered'], ['sold', 'Sold'], ['collected', 'Collected']
+];
+const STATUS_LABEL = Object.fromEntries(STATUSES);
+const ACTIVE = ['interested', 'preparing', 'submitted', 'preselected', 'selected', 'delivered'];
+const CONF = {
+  confirmed: ['Confirmed', 'Dates from the organiser’s own site.'],
+  listed: ['Listed', 'Dates from an aggregator listing — verify on the organiser’s page before entering.'],
+  expected: ['Expected', 'Recurring call; this year’s dates not yet announced.'],
+  mine: ['My entry', 'Added by you.']
+};
+
+/* ---------- Seed: verified society & prize calls (24 Oct 2026) ----------
+   Rule: only dates/fees stated by a source are filled; unknowns stay blank. */
+const SEED = [
+  { id:'npg-2027', title:'Herbert Smith Freehills Kramer Portrait Award 2027', organiser:'National Portrait Gallery',
+    url:'https://www.npg.org.uk/hsfkramerportraitaward', source:'FAD Magazine, 23 Sep 2026',
+    sourceUrl:'https://fadmagazine.com/2026/09/23/national-portrait-gallery-portrait-award-2027-open-call/',
+    confidence:'listed', kind:'call', venue:'National Portrait Gallery, London', fee:'',
+    prize:'£35,000 first; £12,000 second; £10,000 third; £9,000 Young Artist Award (18–30)',
+    medium:'Painting (portrait)', eligibility:'Painters 18+, worldwide; painted portrait completed after 1 Jan 2025',
+    platform:'competitions.npg.org.uk',
+    milestones:[{type:'open',date:'2026-09-22',time:'09:00'},{type:'deadline',date:'2026-12-01',time:'22:00'},{type:'exhibition',date:'2027-06-24',end:'2027-10-10'}],
+    notes:'Entry fee not stated in the source — check the rules page.' },
+  { id:'hilliard-2027', title:'Hilliard Society Annual Exhibition 2027', organiser:'The Hilliard Society of Miniaturists',
+    url:'https://www.hilliardsociety.org/', source:'Hilliard Society website', sourceUrl:'https://www.hilliardsociety.org/',
+    confidence:'confirmed', kind:'call', venue:'Town Hall, Wells, Somerset', fee:'', prize:'', medium:'Miniatures', eligibility:'', platform:'',
+    milestones:[{type:'receiving',date:'2027-04-05',end:'2027-04-12',label:'Artwork arrives for selection'},{type:'pv',date:'2027-06-04'},{type:'exhibition',date:'2027-06-05',end:'2027-06-12'}],
+    notes:'Fees and size rules are in the Submission Guide on the society site.' },
+  { id:'ps-2027', title:'Pastel Society Annual Exhibition 2027 — open call', organiser:'The Pastel Society',
+    url:'https://www.artrabbit.com/artist-opportunities/2026/november/the-pastel-society-open-call-2027', source:'ArtRabbit listing',
+    sourceUrl:'https://www.artrabbit.com/artist-opportunities/2026/november/the-pastel-society-open-call-2027',
+    confidence:'listed', kind:'call', venue:'Mall Galleries, London', fee:'', prize:'More than £5,000 in prizes and awards', medium:'', eligibility:'', platform:'',
+    milestones:[{type:'deadline',date:'2026-11-20'}],
+    notes:'Deadline time, fee and receiving day not in the listing — check the Mall Galleries open-call page.' },
+  { id:'rba-2027', title:'Royal Society of British Artists 2027 — open call', organiser:'Royal Society of British Artists (RBA)',
+    url:'https://www.artrabbit.com/artist-opportunities/2027/january/the-royal-society-of-british-artists-open-call-2027', source:'ArtRabbit listing',
+    sourceUrl:'https://www.artrabbit.com/artist-opportunities/2027/january/the-royal-society-of-british-artists-open-call-2027',
+    confidence:'listed', kind:'call', venue:'Mall Galleries, London', fee:'', prize:'£15,000 in prizes, incl. £10,000 Huaicun Zhang Award for Excellence', medium:'', eligibility:'', platform:'',
+    milestones:[{type:'deadline',date:'2027-01-08'}],
+    notes:'Deadline time, fee and receiving day not in the listing — check the Mall Galleries open-call page.' },
+  { id:'ri-2027', title:'Royal Institute of Painters in Water Colours 2027 — open call', organiser:'Royal Institute of Painters in Water Colours (RI)',
+    url:'https://www.artrabbit.com/artist-opportunities/2027/january/royal-institute-of-painters-in-water-colours-open-call-2027', source:'ArtRabbit listing',
+    sourceUrl:'https://www.artrabbit.com/artist-opportunities/2027/january/royal-institute-of-painters-in-water-colours-open-call-2027',
+    confidence:'listed', kind:'call', venue:'Mall Galleries, London', fee:'', prize:'Over £10,000 in prizes, incl. the Winsor & Newton Prize', medium:'', eligibility:'', platform:'',
+    milestones:[{type:'deadline',date:'2027-01-22'}],
+    notes:'Deadline time, fee and receiving day not in the listing — check the Mall Galleries open-call page.' },
+  { id:'rp-2027', title:'Royal Society of Portrait Painters Annual Exhibition 2027', organiser:'Royal Society of Portrait Painters (RP)',
+    url:'https://www.mallgalleries.org.uk/open-calls/royal-society-portrait-painters', source:'Mall Galleries',
+    sourceUrl:'https://www.mallgalleries.org.uk/open-calls/royal-society-portrait-painters',
+    confidence:'expected', kind:'watch', venue:'Mall Galleries, London', fee:'', prize:'', medium:'Portraiture', eligibility:'', platform:'Mall Galleries online submission',
+    milestones:[],
+    notes:'2027 dates not yet announced. 2026 cycle for reference: submissions 3 Nov 2025 – 3 Feb 2026 (12 noon); receiving day 28 Feb; £22 per work (£14.50 if 35 or under); max 2.4 m longest side.' },
+  { id:'ra-2027', title:'Royal Academy Summer Exhibition 2027', organiser:'Royal Academy of Arts',
+    url:'https://summer.royalacademy.org.uk/', source:'Royal Academy', sourceUrl:'https://www.royalacademy.org.uk/summer-exhibition-terms',
+    confidence:'expected', kind:'watch', venue:'Royal Academy, London', fee:'', prize:'', medium:'', eligibility:'', platform:'RA online entry',
+    milestones:[],
+    notes:'2027 dates not yet announced. 2026 cycle: digital entry 7 Jan – 11 Feb; £40 per work, max 2 works. Entries are capped (18,000 forms) and sold out before the 2026 deadline — buy the entry form early.' },
+  { id:'jacksons-2027', title:'Jackson’s Art Prize 2027', organiser:'Jackson’s Art Supplies',
+    url:'https://www.jacksonsart.com/artprize/', source:'Jackson’s Art blog', sourceUrl:'https://www.jacksonsart.com/blog/2025/11/12/jacksons-art-prize-2026/',
+    confidence:'expected', kind:'watch', venue:'', fee:'', prize:'', medium:'', eligibility:'', platform:'Award Force',
+    milestones:[],
+    notes:'2027 call not yet announced. 2026 cycle opened 12 Nov 2025 and closed 13 Feb 2026 (extended from 11 Feb); £5 early-bird / £6.50 standard per entry.' },
+  { id:'rms-2026', title:'RMS Annual Exhibition 2026', organiser:'The Royal Society of Miniature Painters, Sculptors and Gravers',
+    url:'https://royal-miniature-society.org.uk/', source:'RMS exhibition information for members',
+    sourceUrl:'https://royal-miniature-society.org.uk/wp-content/uploads/2026/08/Exhibition-Information-for-Members-Associates-and-Students.pdf',
+    confidence:'confirmed', kind:'call', venue:'Alliston Centre, Royal Agricultural University, Cirencester', fee:'', prize:'', medium:'Miniatures', eligibility:'', platform:'',
+    milestones:[{type:'exhibition',date:'2026-10-24',end:'2026-11-02'}],
+    notes:'Online entry deadline was 28 Aug 2026. 40% commission on sales. Add collection date when confirmed.' },
+  { id:'rms-2027', title:'RMS Annual Exhibition 2027', organiser:'The Royal Society of Miniature Painters, Sculptors and Gravers',
+    url:'https://royal-miniature-society.org.uk/', source:'', sourceUrl:'',
+    confidence:'expected', kind:'watch', venue:'', fee:'', prize:'', medium:'Miniatures', eligibility:'', platform:'',
+    milestones:[], notes:'Dates to be set — edit this entry when confirmed.' },
+  { id:'rp-drawing', title:'RP Drawing Prize', organiser:'Royal Society of Portrait Painters (RP)',
+    url:'https://therp.co.uk/the-rp-drawing-prize/', source:'RP website', sourceUrl:'https://therp.co.uk/the-rp-drawing-prize/',
+    confidence:'expected', kind:'watch', venue:'University of Hull Art Gallery', fee:'', prize:'£5,000', medium:'Drawing (portrait)', eligibility:'', platform:'',
+    milestones:[], notes:'Next cycle not announced. Previous deadline: 28 July, 5pm.' }
+];
+const SEED_FIELDS = ['title','organiser','url','source','sourceUrl','confidence','kind','venue','fee','prize','medium','eligibility','platform','milestones','notes'];
+
+/* ---------- State ---------- */
+let DB = { seedVersion: 0, items: [], settings: {
+  reminders: [28, 7, 1], calendarId: null, calendarName: '', notify: true, notifyTime: '09:00',
+  widgetScope: 'tracked', lastArtquest: null, lastArtquestCount: null, lastArtquestError: ''
+}};
+let FILTER = 'upcoming';
+let QUERY = '';
+
+/* ---------- Utils ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad = n => String(n).padStart(2, '0');
+const iso = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const today = () => iso(new Date());
+const parseISO = s => { const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); };
+const daysUntil = s => Math.round((parseISO(s) - parseISO(today())) / 86400000);
+const fmtDate = (s, long) => parseISO(s).toLocaleDateString('en-GB', long
+  ? { weekday:'short', day:'numeric', month:'short', year:'numeric' }
+  : { day:'numeric', month:'short', year:'numeric' });
+const money = v => { const n = parseFloat(v); return isFinite(n) ? n : 0; };
+const gbp = n => '£' + n.toFixed(2).replace(/\.00$/, '');
+const uid = () => 'u' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+function hash(s){ let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) | 0; return (h >>> 0).toString(36); }
+let toastT;
+function toast(msg, ms = 2600){ const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), ms); }
+const mKey = m => `${m.type}|${m.date}`;
+const mLabel = m => m.label || MT[m.type] || 'Date';
+function mWhen(m){
+  let s = fmtDate(m.date, true);
+  if (m.end && m.end !== m.date) s += ' – ' + fmtDate(m.end, true);
+  if (m.time) s += ' · ' + m.time;
+  return s;
+}
+function countdownText(d){ return d === 0 ? 'today' : d === 1 ? 'tomorrow' : d > 0 ? `in ${d} days` : `${-d} days ago`; }
+
+/* ---------- Derived ---------- */
+function upcoming(item){
+  const t = today();
+  return (item.milestones || []).filter(m => (m.end || m.date) >= t).sort((a, b) => a.date.localeCompare(b.date));
+}
+function keyMilestone(item){ return upcoming(item)[0] || null; }
+function isTracked(item){ return ACTIVE.includes(item.status); }
+function sortKey(item){ const k = keyMilestone(item); return k ? (k.date < today() ? today() : k.date) : '9999'; }
+
+/* ---------- Storage ---------- */
+async function load(){
+  let raw = null;
+  try { if (P.Prefs) raw = (await P.Prefs.get({ key: STORE_KEY })).value; } catch (e) {}
+  if (!raw) { try { raw = localStorage.getItem(STORE_KEY); } catch (e) {} }
+  if (raw) {
+    try { const d = JSON.parse(raw); DB = { ...DB, ...d, settings: { ...DB.settings, ...(d.settings || {}) } }; } catch (e) {}
+  }
+  mergeSeed();
+}
+function mergeSeed(){
+  for (const s of SEED) {
+    if ((DB.deletedSeed || []).includes(s.id)) continue;
+    const ex = DB.items.find(i => i.id === s.id);
+    if (!ex) DB.items.push(blankUser({ ...JSON.parse(JSON.stringify(s)), seeded: true }));
+    else if (DB.seedVersion < SEED_VERSION && !ex.userEdited) for (const f of SEED_FIELDS) ex[f] = JSON.parse(JSON.stringify(s[f]));
+  }
+  DB.seedVersion = SEED_VERSION;
+}
+function blankUser(o){
+  return { status:'', myNotes:'', feePaid:'', costs:'', income:'', cal:{}, pinned:false, seen:true, addedAt: today(), ...o };
+}
+let saveT;
+function save(){
+  clearTimeout(saveT);
+  saveT = setTimeout(async () => {
+    const raw = JSON.stringify(DB);
+    try { localStorage.setItem(STORE_KEY, raw); } catch (e) {}
+    try { if (P.Prefs) await P.Prefs.set({ key: STORE_KEY, value: raw }); } catch (e) {}
+    syncWidget();
+    rescheduleNotifications();
+  }, 400);
+}
+
+/* ---------- Render: Calls ---------- */
+function filtered(){
+  const t = today(), q = QUERY.trim().toLowerCase();
+  let list = DB.items.filter(i => {
+    if (q && !`${i.title} ${i.organiser} ${i.venue} ${i.notes} ${i.myNotes} ${i.medium}`.toLowerCase().includes(q)) return false;
+    const up = upcoming(i).length > 0, hasDates = (i.milestones || []).length > 0;
+    switch (FILTER) {
+      case 'upcoming': return up;
+      case 'watch': return i.kind === 'watch' || !hasDates;
+      case 'new': return i.discovered && !i.seen;
+      case 'past': return hasDates && !up;
+      default: return true;
+    }
+  });
+  list.sort((a, b) => sortKey(a).localeCompare(sortKey(b)) || a.title.localeCompare(b.title));
+  if (FILTER === 'past') list.reverse();
+  return list;
+}
+function renderChips(){
+  const c = { upcoming:0, watch:0, new:0, past:0, all:DB.items.length };
+  for (const i of DB.items) {
+    const up = upcoming(i).length > 0, has = (i.milestones || []).length > 0;
+    if (up) c.upcoming++; if (i.kind === 'watch' || !has) c.watch++;
+    if (i.discovered && !i.seen) c.new++; if (has && !up) c.past++;
+  }
+  const defs = [['upcoming','Upcoming'],['watch','Watch-list'],['new','New'],['past','Past'],['all','All']];
+  $('#filterChips').innerHTML = defs.filter(([k]) => k !== 'new' || c.new)
+    .map(([k, l]) => `<button class="chip ${FILTER === k ? 'on' : ''}" data-filter="${k}">${l}<span class="n">${c[k]}</span></button>`).join('');
+}
+function cardHTML(i){
+  const k = keyMilestone(i);
+  let count;
+  if (k) {
+    const live = !!k.end && k.date <= today();
+    const d = live ? daysUntil(k.end) : daysUntil(k.date);
+    const cls = d <= 7 ? 'urgent' : d <= 28 ? 'soon' : '';
+    count = `<div class="count ${live ? '' : cls}"><b>${d === 0 ? '0' : d}</b><small>${live ? 'days left' : d === 1 ? 'day' : 'days'}</small></div>`;
+  } else count = `<div class="count watch"><b>${i.kind === 'watch' ? 'Watch' : 'Past'}</b></div>`;
+  const next = k
+    ? (k.end && k.date <= today() ? `${esc(mLabel(k))} · on now, until ${fmtDate(k.end)}` : `${esc(mLabel(k))} · ${mWhen(k)}`)
+    : (i.kind === 'watch' ? 'Dates not yet announced' : 'All dates passed');
+  const tags = [];
+  if (i.discovered && !i.seen) tags.push('<span class="tag new">New</span>');
+  if (i.status) tags.push(`<span class="tag gold">${esc(STATUS_LABEL[i.status])}</span>`);
+  if (i.confidence) tags.push(`<span class="tag ${i.confidence === 'listed' ? 'warn' : ''}">${esc(CONF[i.confidence]?.[0] || '')}</span>`);
+  if (i.fee) tags.push(`<span class="tag">${esc(i.fee)}</span>`);
+  if (i.source === 'Artquest') tags.push('<span class="tag">Artquest</span>');
+  if (Object.keys(i.cal || {}).length) tags.push('<span class="tag gold">In calendar</span>');
+  const org = [i.organiser, i.venue].filter(Boolean).join(' · ');
+  return `<button class="card" data-open="${esc(i.id)}">${count}<div style="min-width:0;flex:1">
+    <h3>${esc(i.title)}</h3>${org ? `<p class="org">${esc(org)}</p>` : ''}
+    <p class="next">${next}</p><div class="tags">${tags.join('')}</div></div></button>`;
+}
+function renderCalls(){
+  renderChips();
+  const list = filtered();
+  $('#callList').innerHTML = list.length ? list.map(cardHTML).join('')
+    : `<div class="empty">${FILTER === 'upcoming' ? 'No upcoming dates. Tap + to add a call, or ↻ to check Artquest.' : 'Nothing here yet.'}</div>`;
+}
+function renderHeadline(){
+  const tracked = DB.items.filter(isTracked);
+  const pool = tracked.length ? tracked : DB.items;
+  let best = null;
+  for (const i of pool) for (const m of upcoming(i)) {
+    if (m.date < today() || m.type === 'exhibition') continue;
+    if (!best || m.date < best.m.date) best = { i, m };
+  }
+  $('#headline').textContent = best
+    ? `Next: ${MT_SHORT[best.m.type] || 'Date'} ${countdownText(daysUntil(best.m.date))} — ${best.i.title}`
+    : 'No upcoming deadlines';
+}
+
+/* ---------- Render: Tracker ---------- */
+function renderTracker(){
+  const groups = STATUSES.filter(([k]) => k).map(([k, l]) => [l, DB.items.filter(i => i.status === k)]).filter(([, a]) => a.length);
+  $('#trackerList').innerHTML = groups.length
+    ? groups.map(([l, a]) => `<div class="section-h">${esc(l)} · ${a.length}</div><div class="list">${a.sort((x,y)=>sortKey(x).localeCompare(sortKey(y))).map(cardHTML).join('')}</div>`).join('')
+    : '<div class="empty">Open a call and set a status (Interested, Submitted…) to track it here. Tracked calls drive your widget and reminders.</div>';
+}
+
+/* ---------- Render: Ledger ---------- */
+function itemYear(i){ const d = (i.milestones || []).find(m => m.type === 'deadline') || (i.milestones || [])[0]; return (d ? d.date : i.addedAt || today()).slice(0, 4); }
+function renderLedger(){
+  const rows = DB.items.filter(i => money(i.feePaid) || money(i.costs) || money(i.income));
+  if (!rows.length) { $('#ledger').innerHTML = '<div class="empty">Record entry fees, framing/courier costs and sales or prize income on any call — totals by year appear here.</div>'; return; }
+  const byYear = {};
+  rows.forEach(i => (byYear[itemYear(i)] ||= []).push(i));
+  $('#ledger').innerHTML = Object.keys(byYear).sort().reverse().map(y => {
+    const a = byYear[y]; let F = 0, C = 0, I = 0;
+    const body = a.map(i => { const f = money(i.feePaid), c = money(i.costs), n = money(i.income); F += f; C += c; I += n;
+      return `<tr data-open="${esc(i.id)}"><td>${esc(i.title)}</td><td>${f ? gbp(f) : ''}</td><td>${c ? gbp(c) : ''}</td><td>${n ? gbp(n) : ''}</td></tr>`; }).join('');
+    const net = I - F - C;
+    return `<div class="section-h">${y}</div><div class="set" style="padding:6px 12px"><table class="ledger">
+      <tr><th>Call</th><th>Fees</th><th>Costs</th><th>Income</th></tr>${body}
+      <tr class="tot"><td>Total</td><td>${gbp(F)}</td><td>${gbp(C)}</td><td>${gbp(I)}</td></tr></table>
+      <p class="sub" style="margin:8px 0 6px">Net ${net >= 0 ? 'return' : 'spend'}: <b style="color:${net >= 0 ? 'var(--green)' : 'var(--amber)'}">${gbp(Math.abs(net))}</b></p></div>`;
+  }).join('');
+}
+
+/* ---------- Render: Settings ---------- */
+function renderSettings(){
+  const s = DB.settings;
+  const aq = s.lastArtquest ? `Last checked ${new Date(s.lastArtquest).toLocaleString('en-GB', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' })} · ${s.lastArtquestCount ?? 0} listings` : 'Not checked yet';
+  $('#settings').innerHTML = `
+  <div class="section-h">Calendar</div>
+  <div class="set">
+    <div class="set-row"><div class="t">Add events to<small>${esc(s.calendarName || 'Not chosen — you’ll be asked the first time')}</small></div>
+      <button class="btn small" data-act="pickCal">${s.calendarId ? 'Change' : 'Choose'}</button></div>
+    <div class="set-row"><div class="t">Reminders (days before)<small>Deadlines, hand-in and opening dates. Other dates get 1 day.</small></div>
+      <input class="in" style="width:110px;text-align:center" id="remInput" value="${esc(s.reminders.join(', '))}" inputmode="numeric"></div>
+  </div>
+  <div class="section-h">Notifications</div>
+  <div class="set">
+    <div class="set-row"><div class="t">App reminders for tracked calls<small>7 days and 1 day before, alongside calendar alerts</small></div>
+      <button class="switch ${s.notify ? 'on' : ''}" data-act="toggleNotify" aria-label="Toggle app reminders"></button></div>
+    <div class="set-row"><div class="t">Reminder time</div><input class="in" type="time" style="width:140px" id="notifyTime" value="${esc(s.notifyTime)}"></div>
+  </div>
+  <div class="section-h">Home-screen widget</div>
+  <div class="set">
+    <div class="set-row"><div class="t">Widget shows<small>${s.widgetScope === 'tracked' ? 'Tracked and pinned calls (falls back to all if none)' : 'All calls'}</small></div>
+      <button class="btn small" data-act="toggleScope">${s.widgetScope === 'tracked' ? 'Show all' : 'Tracked only'}</button></div>
+    <div class="set-row"><div class="t">Add countdown widget<small>Or long-press your home screen → Widgets → Call to Artists</small></div>
+      <button class="btn small" data-act="pinWidget">Add</button></div>
+  </div>
+  <div class="section-h">Sources</div>
+  <div class="set">
+    <div class="set-row"><div class="t">Artquest open calls<small>${esc(aq)}${s.lastArtquestError ? ' · ⚠ ' + esc(s.lastArtquestError) : ''}</small></div>
+      <button class="btn small" data-act="refresh">Check now</button></div>
+    <div class="set-row"><div class="t">Other sites<small>CuratorSpace forbids automated collection and a-n listings are members-only, so add those by sharing the page to this app (Share → Call to Artists).</small></div></div>
+  </div>
+  <div class="section-h">Data</div>
+  <div class="set">
+    <div class="set-row"><div class="t">Back up<small>JSON file of all calls, statuses and ledger</small></div><button class="btn small" data-act="export">Export</button></div>
+    <div class="set-row"><div class="t">Restore<small>Replaces current data</small></div>
+      <label class="btn small">Import<input type="file" id="importFile" accept="application/json,.json" hidden></label></div>
+  </div>
+  <p class="build">${esc(BUILD)}${isNative ? '' : ' · browser preview (native features off)'}</p>`;
+}
+
+function renderAll(){
+  renderHeadline(); renderCalls(); renderTracker(); renderLedger(); renderSettings();
+  document.querySelectorAll('[data-build]').forEach(e => e.textContent = BUILD);
+}
+
+/* ---------- Sheet ---------- */
+let sheetOpen = false, sheetCloseHook = null;
+function openSheet(html, onClose){
+  // Let the outgoing sheet save its fields before its DOM is replaced.
+  if (sheetCloseHook) { const h = sheetCloseHook; sheetCloseHook = null; h(); }
+  $('#sheetBody').innerHTML = html;
+  $('#sheet').classList.remove('hidden');
+  $('.sheet-panel').scrollTop = 0;
+  if (!sheetOpen) history.pushState({ sheet: 1 }, '');
+  sheetOpen = true;
+  sheetCloseHook = onClose || null;
+}
+function hideSheet(){
+  $('#sheet').classList.add('hidden'); sheetOpen = false;
+  if (sheetCloseHook) { const h = sheetCloseHook; sheetCloseHook = null; h(); }
+}
+function closeSheet(){ if (!sheetOpen) return; hideSheet(); if (history.state && history.state.sheet) history.back(); }
+window.addEventListener('popstate', () => { if (sheetOpen) hideSheet(); });
+
+/* ---------- Detail ---------- */
+let CUR = null;
+function openDetail(id){
+  const i = DB.items.find(x => x.id === id); if (!i) return;
+  CUR = i;
+  if (i.discovered && !i.seen) { i.seen = true; save(); renderCalls(); }
+  const t = today();
+  const ms = (i.milestones || []).slice().sort((a, b) => a.date.localeCompare(b.date));
+  const msHTML = ms.length ? `<div class="ms">${ms.map(m => {
+      const past = (m.end || m.date) < t, idx = i.milestones.indexOf(m), inCal = i.cal && i.cal[mKey(m)];
+      const d = daysUntil(m.date);
+      return `<div class="ms-row ${past ? 'past' : ''}"><div class="d"><b>${esc(mLabel(m))}</b><small>${mWhen(m)}${past ? '' : ' · ' + countdownText(d)}</small></div>
+        ${past ? '' : `<button class="btn small ${inCal ? 'done' : ''}" data-act="cal" data-idx="${idx}">${inCal ? '✓ Added' : '+ Calendar'}</button>`}</div>`;
+    }).join('')}</div>` : '<p class="sub">No dates yet.</p>';
+  const facts = [['Venue', i.venue], ['Fee', i.fee], ['Prize', i.prize], ['Medium', i.medium], ['Eligibility', i.eligibility], ['Submit via', i.platform]]
+    .filter(([, v]) => v).map(([k, v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join('');
+  const conf = CONF[i.confidence];
+  const lastChecked = i.lastChecked ? ` Last checked ${fmtDate(i.lastChecked)}.` : '';
+  openSheet(`
+    <h2>${esc(i.title)}</h2>
+    <p class="sub">${esc(i.organiser || '')}</p>
+    <div class="row-btns">
+      ${i.url ? `<a class="btn" href="${esc(i.url)}" target="_blank" rel="noopener">Open listing ↗</a>` : ''}
+      ${i.sourceUrl && i.sourceUrl !== i.url ? `<a class="btn ghost" href="${esc(i.sourceUrl)}" target="_blank" rel="noopener">Source ↗</a>` : ''}
+    </div>
+    ${conf ? `<div class="note ${i.confidence === 'listed' ? 'warn' : ''}"><b>${conf[0]}.</b> ${conf[1]}${i.source && i.confidence !== 'mine' ? ' Source: ' + esc(i.source) + '.' : ''}${lastChecked}</div>` : ''}
+    <div class="section-h" style="margin-top:14px">Key dates</div>
+    ${msHTML}
+    ${upcoming(i).some(m => (m.end || m.date) >= t && m.date >= t) ? `<div class="row-btns"><button class="btn primary" data-act="calAll">Add all upcoming to calendar</button></div>` : ''}
+    ${facts ? `<dl class="facts">${facts}</dl>` : ''}
+    ${i.notes ? `<div class="note">${esc(i.notes)}</div>` : ''}
+    <div class="section-h">My status</div>
+    <div class="statuses">${STATUSES.map(([k, l]) => `<button class="chip ${i.status === k ? 'on' : ''}" data-status="${k}">${l}</button>`).join('')}</div>
+    <div class="row-btns"><button class="btn small ${i.pinned ? 'done' : ''}" data-act="pin">${i.pinned ? '★ On widget' : '☆ Show on widget'}</button></div>
+    <label class="f">My notes (artwork, framing, courier…)</label>
+    <textarea class="in" id="myNotes" placeholder="e.g. Entering ‘Portrait of M.’ – oval frame, 9 × 7 cm">${esc(i.myNotes)}</textarea>
+    <div class="grid3">
+      <div><label class="f">Fees paid £</label><input class="in" id="feePaid" inputmode="decimal" value="${esc(i.feePaid)}"></div>
+      <div><label class="f">Costs £</label><input class="in" id="costs" inputmode="decimal" value="${esc(i.costs)}"></div>
+      <div><label class="f">Income £</label><input class="in" id="income" inputmode="decimal" value="${esc(i.income)}"></div>
+    </div>
+    <div class="row-btns" style="margin-top:18px">
+      <button class="btn" data-act="edit">Edit details</button>
+      <button class="btn danger" data-act="delete">Delete</button>
+    </div>`, () => { saveDetailFields(); });
+}
+function saveDetailFields(){
+  if (!CUR) return;
+  const g = id => { const e = document.getElementById(id); return e ? e.value : null; };
+  const n = g('myNotes'); if (n === null) return;
+  CUR.myNotes = n; CUR.feePaid = g('feePaid'); CUR.costs = g('costs'); CUR.income = g('income');
+  save(); renderAll();
+}
+
+/* ---------- Editor ---------- */
+function detectDates(text){
+  const out = new Set(), M = 'january|february|march|april|may|june|july|august|september|october|november|december';
+  const mon = s => M.split('|').findIndex(x => x.startsWith(s.toLowerCase().slice(0, 3))) + 1;
+  let m;
+  const r1 = /\b(\d{1,2})[\/.](\d{1,2})[\/.](20\d{2})\b/g;
+  while ((m = r1.exec(text))) out.add(`${m[3]}-${pad(m[2])}-${pad(m[1])}`);
+  const r2 = new RegExp(`\\b(\\d{1,2})(?:st|nd|rd|th)?\\s+(${M}|jan|feb|mar|apr|jun|jul|aug|sept?|oct|nov|dec)\\.?,?\\s+(20\\d{2})\\b`, 'gi');
+  while ((m = r2.exec(text))) out.add(`${m[3]}-${pad(mon(m[2]))}-${pad(m[1])}`);
+  const r3 = new RegExp(`\\b(${M}|jan|feb|mar|apr|jun|jul|aug|sept?|oct|nov|dec)\\.?\\s+(\\d{1,2})(?:st|nd|rd|th)?,?\\s+(20\\d{2})\\b`, 'gi');
+  while ((m = r3.exec(text))) out.add(`${m[3]}-${pad(mon(m[1]))}-${pad(m[2])}`);
+  return [...out].filter(d => !isNaN(parseISO(d))).sort();
+}
+function msEditRow(m, k){
+  return `<div class="ms-edit" data-ms="${k}">
+    <div class="grid2"><select class="in" data-f="type">${Object.entries(MT).map(([v, l]) => `<option value="${v}" ${m.type === v ? 'selected' : ''}>${l}</option>`).join('')}</select>
+      <input class="in" data-f="label" placeholder="Custom label (optional)" value="${esc(m.label || '')}"></div>
+    <div class="grid3" style="margin-top:8px">
+      <input class="in" type="date" data-f="date" value="${esc(m.date || '')}">
+      <input class="in" type="date" data-f="end" value="${esc(m.end || '')}" title="End date (optional)">
+      <input class="in" type="time" data-f="time" value="${esc(m.time || '')}" title="Time (optional)">
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-top:6px"><small class="sub" style="margin:0">Date · end (optional) · time (optional)</small>
+      <button class="btn small ghost" data-act="msDel">Remove</button></div></div>`;
+}
+function openEditor(item, prefill){
+  const isNew = !item;
+  const i = item ? JSON.parse(JSON.stringify(item)) : { title:'', organiser:'', url:'', venue:'', fee:'', prize:'', medium:'', eligibility:'', platform:'', kind:'call', milestones:[], notes:'', ...(prefill || {}) };
+  if (!i.milestones.length) i.milestones.push({ type:'deadline', date:'' });
+  const found = prefill && prefill._dates ? prefill._dates : [];
+  openSheet(`
+    <h2>${isNew ? 'Add a call' : 'Edit details'}</h2>
+    ${found.length ? `<div class="note">Dates found in what you shared — tap to add:<div class="row-btns">${found.map(d => `<button class="btn small" data-act="useDate" data-date="${d}">${fmtDate(d, true)}</button>`).join('')}</div></div>` : ''}
+    <label class="f">Title</label><input class="in" id="e_title" value="${esc(i.title)}" placeholder="e.g. ROI Annual Exhibition 2027">
+    <label class="f">Organiser</label><input class="in" id="e_organiser" value="${esc(i.organiser)}">
+    <label class="f">Link</label><input class="in" id="e_url" value="${esc(i.url)}" inputmode="url" placeholder="https://">
+    <div class="grid2">
+      <div><label class="f">Venue</label><input class="in" id="e_venue" value="${esc(i.venue)}"></div>
+      <div><label class="f">Entry fee</label><input class="in" id="e_fee" value="${esc(i.fee)}" placeholder="e.g. £20 per work"></div>
+    </div>
+    <div class="grid2">
+      <div><label class="f">Prize</label><input class="in" id="e_prize" value="${esc(i.prize)}"></div>
+      <div><label class="f">Medium</label><input class="in" id="e_medium" value="${esc(i.medium)}"></div>
+    </div>
+    <label class="f">Eligibility / size limits</label><input class="in" id="e_eligibility" value="${esc(i.eligibility)}">
+    <label class="f">Submit via</label><input class="in" id="e_platform" value="${esc(i.platform)}" placeholder="e.g. Mall Galleries online, Award Force">
+    <label class="f">Type</label>
+    <div class="statuses"><button class="chip ${i.kind !== 'watch' ? 'on' : ''}" data-kind="call">Open call</button><button class="chip ${i.kind === 'watch' ? 'on' : ''}" data-kind="watch">Watch-list (recurring)</button></div>
+    <div class="section-h">Dates</div>
+    <div id="msList">${i.milestones.map((m, k) => msEditRow(m, k)).join('')}</div>
+    <button class="btn small" data-act="msAdd">+ Add date</button>
+    <label class="f">Notes</label><textarea class="in" id="e_notes">${esc(i.notes)}</textarea>
+    <div class="row-btns" style="margin-top:18px"><button class="btn primary" data-act="saveEdit">Save</button><button class="btn ghost" data-act="cancelEdit">Cancel</button></div>`);
+  EDIT = { item, kind: i.kind || 'call' };
+}
+let EDIT = null;
+function readEditor(){
+  const v = id => ($('#' + id)?.value || '').trim();
+  const ms = [...document.querySelectorAll('#msList .ms-edit')].map(r => {
+    const g = f => (r.querySelector(`[data-f="${f}"]`)?.value || '').trim();
+    const m = { type: g('type'), date: g('date') };
+    if (g('end') && g('end') > m.date) m.end = g('end');
+    if (g('time')) m.time = g('time');
+    if (g('label')) m.label = g('label');
+    return m;
+  }).filter(m => m.date);
+  return { title: v('e_title'), organiser: v('e_organiser'), url: v('e_url'), venue: v('e_venue'), fee: v('e_fee'),
+    prize: v('e_prize'), medium: v('e_medium'), eligibility: v('e_eligibility'), platform: v('e_platform'),
+    notes: v('e_notes'), kind: EDIT.kind, milestones: ms };
+}
+function saveEditor(){
+  const d = readEditor();
+  if (!d.title) { toast('Add a title first'); return; }
+  let item = EDIT.item;
+  if (item) {
+    // Dates that changed lose their calendar link (the old event stays in your calendar).
+    const keep = new Set(d.milestones.map(mKey));
+    for (const k of Object.keys(item.cal || {})) if (!keep.has(k)) delete item.cal[k];
+    Object.assign(item, d, { userEdited: true, lastChecked: today() });
+  } else {
+    item = blankUser({ id: uid(), ...d, confidence: 'mine', source: 'Added by me', status: 'interested', lastChecked: today() });
+    DB.items.push(item);
+  }
+  save(); renderAll(); openDetail(item.id);
+  toast('Saved');
+}
+
+/* ---------- Calendar ---------- */
+let calResolve = null;
+async function pickCalendar(){
+  if (!isNative) { toast('Calendar choice is available in the Android app'); return null; }
+  let cals;
+  try { cals = (await P.Cta.listCalendars()).calendars || []; }
+  catch (e) { toast('Calendar permission is needed to add events'); return null; }
+  if (!cals.length) { toast('No writable calendars found'); return null; }
+  const rank = c => (c.accountType === 'com.google' ? 0 : 1) + (c.primary ? 0 : 0.5);
+  cals.sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name));
+  const reopen = CUR ? CUR.id : null;
+  return new Promise(res => {
+    calResolve = res;
+    openSheet(`<h2>Choose a calendar</h2>
+      <p class="sub">A Google calendar shows up in Samsung Calendar and Google Calendar alike. “My calendar” stays on this phone only.</p>
+      ${cals.map(c => `<button class="cal-opt" data-cal="${esc(c.id)}" data-calname="${esc(c.name + ' · ' + c.account)}">
+        <span class="dot" style="background:${esc(c.color)}"></span><span style="flex:1;min-width:0"><b>${esc(c.name)}</b><br><small class="sub">${esc(c.account)}${c.accountType === 'com.google' ? ' · Google' : ''}</small></span></button>`).join('')}`,
+      () => { if (calResolve) { const r = calResolve; calResolve = null; r(null); } });
+    calResolve.reopen = reopen;
+  });
+}
+function reminderMinutes(m){
+  const days = REMIND_TYPES.includes(m.type) ? DB.settings.reminders : [1];
+  // All-day: minutes before midnight, so "N days before" fires at 09:00 that day.
+  return days.filter(d => d > 0).map(d => m.time ? d * 1440 : d * 1440 - 540);
+}
+function eventPayload(i, m){
+  const lines = [i.organiser, i.venue && 'Venue: ' + i.venue, i.fee && 'Fee: ' + i.fee, i.platform && 'Submit via: ' + i.platform, i.url, '', 'Added by Call to Artists'].filter(x => x !== undefined && x !== null && x !== false);
+  return { title: `${MT_SHORT[m.type] || 'Date'}: ${i.title}`, description: lines.join('\n'), location: i.venue || '',
+    start: m.date, end: m.end || '', time: m.time || '', durationMin: 30, reminders: reminderMinutes(m) };
+}
+async function addToCalendar(i, m, quiet){
+  if (!isNative) { webCalendar(i, m); return false; }
+  let calId = DB.settings.calendarId;
+  if (!calId) { calId = await pickCalendar(); if (!calId) return false; }
+  const key = mKey(m);
+  if (i.cal[key]) {
+    if (!quiet && !confirm('This date is already in your calendar. Replace it?')) return false;
+    try { await P.Cta.deleteEvent({ eventId: i.cal[key] }); } catch (e) {}
+  }
+  try {
+    const r = await P.Cta.addEvent({ ...eventPayload(i, m), calendarId: String(calId) });
+    i.cal[key] = r.eventId; save();
+    return true;
+  } catch (e) { toast('Could not add: ' + (e.message || e)); return false; }
+}
+function webCalendar(i, m){
+  const p = eventPayload(i, m);
+  const d = s => s.replace(/-/g, '');
+  const next = s => { const x = parseISO(s); x.setDate(x.getDate() + 1); return iso(x); };
+  let dates;
+  if (m.time) {
+    const st = parseISO(m.date); const [h, mi] = m.time.split(':').map(Number); st.setHours(h, mi, 0, 0);
+    const en = new Date(st.getTime() + 30 * 60000);
+    const f = x => `${iso(x).replace(/-/g, '')}T${pad(x.getHours())}${pad(x.getMinutes())}00`;
+    dates = `${f(st)}/${f(en)}`;
+  }
+  else dates = `${d(m.date)}/${d(next(m.end || m.date))}`;
+  const g = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(p.title)}&dates=${dates}&details=${encodeURIComponent(p.description)}&location=${encodeURIComponent(p.location)}&ctz=Europe/London`;
+  window.open(g, '_blank');
+}
+
+/* ---------- Notifications (tracked calls) ---------- */
+let notifT;
+function rescheduleNotifications(){
+  if (!isNative || !P.Notif) return;
+  clearTimeout(notifT);
+  notifT = setTimeout(async () => {
+    try {
+      const pend = await P.Notif.getPending();
+      if (pend.notifications && pend.notifications.length) await P.Notif.cancel({ notifications: pend.notifications.map(n => ({ id: n.id })) });
+      if (!DB.settings.notify) return;
+      const [hh, mm] = DB.settings.notifyTime.split(':').map(Number);
+      const now = Date.now(), list = [];
+      for (const i of DB.items) {
+        if (!isTracked(i)) continue;
+        const pre = ['interested', 'preparing'].includes(i.status);
+        for (const m of i.milestones || []) {
+          const relevant = pre ? ['open', 'deadline'].includes(m.type) : ['notify', 'receiving', 'collection', 'pv'].includes(m.type);
+          if (!relevant) continue;
+          for (const d of [7, 1]) {
+            const at = parseISO(m.date); at.setDate(at.getDate() - d); at.setHours(hh, mm, 0, 0);
+            if (at.getTime() <= now) continue;
+            list.push({ id: list.length + 1, title: `${MT_SHORT[m.type]} ${d === 1 ? 'tomorrow' : 'in 7 days'}`,
+              body: `${i.title}${m.time ? ' · ' + m.time : ''}`, schedule: { at, allowWhileIdle: true } });
+          }
+        }
+      }
+      if (!list.length) return;
+      const perm = await P.Notif.checkPermissions();
+      if (perm.display !== 'granted') { const r = await P.Notif.requestPermissions(); if (r.display !== 'granted') return; }
+      await P.Notif.schedule({ notifications: list.slice(0, 60) });
+    } catch (e) { console.warn('notifications', e); }
+  }, 600);
+}
+
+/* ---------- Widget ---------- */
+function syncWidget(){
+  if (!isNative) return;
+  let pool = DB.items;
+  if (DB.settings.widgetScope === 'tracked') {
+    const t = DB.items.filter(i => isTracked(i) || i.pinned);
+    if (t.length) pool = t;
+  }
+  const out = [];
+  for (const i of pool) for (const m of upcoming(i)) {
+    if (m.type === 'exhibition' || m.date < today()) continue;
+    out.push({ title: i.title, label: mLabel(m), date: m.date, time: m.time || '' });
+  }
+  out.sort((a, b) => a.date.localeCompare(b.date));
+  P.Cta.setWidgetData({ json: JSON.stringify(out.slice(0, 12)) }).catch(() => {});
+}
+
+/* ---------- Artquest ---------- */
+function parseArtquest(html){
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const re = /\(Deadline:\s*(\d{2})\/(\d{2})\/(\d{4})\)/;
+  const junk = /^(read more|more|apply|view|find out more|details)$/i;
+  const out = new Map();
+  doc.querySelectorAll('a[href]').forEach(a => {
+    const txt = a.textContent.replace(/\s+/g, ' ').trim();
+    let title = null, m = txt.match(re);
+    if (m) title = txt.replace(re, '').trim();
+    else {
+      const box = a.closest('article, li, div');
+      const bt = box ? box.textContent.replace(/\s+/g, ' ').trim() : '';
+      if (bt.length < 600) { m = bt.match(re); if (m) title = txt; }
+    }
+    if (!m || !title || title.length < 4 || junk.test(title)) return;
+    let href; try { href = new URL(a.getAttribute('href'), AQ_URL).href; } catch (e) { return; }
+    if (out.has(href)) return;
+    out.set(href, { title, date: `${m[3]}-${m[2]}-${m[1]}`, url: href });
+  });
+  if (!out.size) {
+    const text = doc.body ? doc.body.innerText || doc.body.textContent : '';
+    const re2 = /([^\n()]{4,200}?)\s*\(Deadline:\s*(\d{2})\/(\d{2})\/(\d{4})\)/g; let m;
+    while ((m = re2.exec(text))) { const t = m[1].trim(); out.set(t + m[4] + m[3] + m[2], { title: t, date: `${m[4]}-${m[3]}-${m[2]}`, url: AQ_URL }); }
+  }
+  return [...out.values()].filter(x => !isNaN(parseISO(x.date)));
+}
+let refreshing = false;
+async function refreshArtquest(manual){
+  if (refreshing) return;
+  if (!isNative || !P.Http) { if (manual) toast('Live checking works in the Android app'); return; }
+  refreshing = true; $('#btnRefresh').classList.add('spin');
+  try {
+    const r = await P.Http.get({ url: AQ_URL, headers: { 'User-Agent': 'CallToArtists/personal (Android)' }, responseType: 'text' });
+    if (r.status >= 400) throw new Error('HTTP ' + r.status);
+    const found = parseArtquest(typeof r.data === 'string' ? r.data : '');
+    DB.settings.lastArtquest = Date.now(); DB.settings.lastArtquestCount = found.length;
+    if (!found.length) { DB.settings.lastArtquestError = 'no listings recognised — the page layout may have changed'; save(); renderSettings(); if (manual) toast('Artquest page layout changed — nothing read'); return; }
+    DB.settings.lastArtquestError = '';
+    let added = 0, changed = 0;
+    for (const f of found) {
+      const id = 'aq-' + hash(f.url + '|' + f.title);
+      const ex = DB.items.find(i => i.id === id);
+      if (ex) {
+        ex.lastChecked = today();
+        const dl = ex.milestones.find(m => m.type === 'deadline');
+        if (dl && dl.date !== f.date && !ex.userEdited) { delete ex.cal[mKey(dl)]; dl.date = f.date; changed++; }
+      } else {
+        DB.items.push(blankUser({ id, title: f.title, organiser: '', url: f.url, source: 'Artquest', sourceUrl: AQ_URL,
+          confidence: 'listed', kind: 'call', venue: '', fee: '', prize: '', medium: '', eligibility: '', platform: '', notes: '',
+          milestones: [{ type: 'deadline', date: f.date }], discovered: true, seen: false, lastChecked: today() }));
+        added++;
+      }
+    }
+    // Tidy: drop untracked Artquest finds that closed over two weeks ago.
+    const cutoff = (() => { const d = new Date(); d.setDate(d.getDate() - 14); return iso(d); })();
+    DB.items = DB.items.filter(i => !(i.source === 'Artquest' && !i.status && !i.pinned && !Object.keys(i.cal || {}).length &&
+      (i.milestones || []).every(m => (m.end || m.date) < cutoff)));
+    save(); renderAll();
+    if (manual || added) toast(added ? `${added} new from Artquest${changed ? `, ${changed} updated` : ''}` : `Artquest checked — nothing new${changed ? `, ${changed} updated` : ''}`);
+    if (added && FILTER !== 'new' && manual) { FILTER = 'new'; renderCalls(); }
+  } catch (e) {
+    DB.settings.lastArtquestError = 'could not reach Artquest'; save(); renderSettings();
+    if (manual) toast('Couldn’t reach Artquest — check your connection');
+  } finally { refreshing = false; $('#btnRefresh').classList.remove('spin'); }
+}
+
+/* ---------- Share-to-app ---------- */
+async function checkShare(){
+  if (!isNative) return;
+  try {
+    const r = await P.Cta.consumeShare();
+    if (!r || !r.text) return;
+    const text = r.text, url = (text.match(/https?:\/\/\S+/) || [''])[0];
+    const title = (r.subject || text.replace(url, '').split('\n')[0] || '').trim().slice(0, 140);
+    openEditor(null, { title, url, notes: text.length > 300 ? '' : text.replace(url, '').trim(), _dates: detectDates(text) });
+  } catch (e) {}
+}
+
+/* ---------- Backup ---------- */
+async function exportData(){
+  const content = JSON.stringify({ app: 'call-to-artists', build: BUILD, exported: new Date().toISOString(), data: DB }, null, 2);
+  const filename = `call-to-artists-${today()}.json`;
+  if (isNative) { try { await P.Cta.shareFile({ filename, content, mime: 'application/json' }); } catch (e) { toast('Export failed'); } return; }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([content], { type: 'application/json' })); a.download = filename; a.click();
+}
+function importData(file){
+  const fr = new FileReader();
+  fr.onload = () => {
+    try {
+      const j = JSON.parse(fr.result); const d = j.data || j;
+      if (!Array.isArray(d.items)) throw 0;
+      if (!confirm(`Replace current data with ${d.items.length} calls from this backup?`)) return;
+      DB = { ...DB, ...d, settings: { ...DB.settings, ...(d.settings || {}) } }; mergeSeed(); save(); renderAll(); toast('Backup restored');
+    } catch (e) { toast('That file isn’t a Call to Artists backup'); }
+  };
+  fr.readAsText(file);
+}
+
+/* ---------- Events ---------- */
+document.addEventListener('click', async e => {
+  const t = e.target.closest('button, [data-open], [data-close], a'); if (!t) return;
+  if (t.matches('[data-close]')) return closeSheet();
+  if (t.dataset.view) {
+    document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b === t));
+    document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + t.dataset.view));
+    $('#fab').style.display = t.dataset.view === 'calls' || t.dataset.view === 'tracker' ? '' : 'none';
+    window.scrollTo(0, 0); return;
+  }
+  if (t.dataset.filter) { FILTER = t.dataset.filter; renderCalls(); return; }
+  if (t.dataset.open) return openDetail(t.dataset.open);
+  if (t.dataset.status !== undefined && CUR) {
+    saveDetailFields(); CUR.status = t.dataset.status; save(); renderAll(); openDetail(CUR.id);
+    if (CUR.status && isNative) rescheduleNotifications();
+    return;
+  }
+  if (t.dataset.kind && EDIT) { EDIT.kind = t.dataset.kind; t.parentElement.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c === t)); return; }
+  if (t.dataset.cal) {
+    const c = calResolve; calResolve = null;
+    DB.settings.calendarId = t.dataset.cal; DB.settings.calendarName = t.dataset.calname; save(); renderSettings();
+    toast('Calendar set: ' + t.dataset.calname);
+    if (c) { c(t.dataset.cal); if (c.reopen) openDetail(c.reopen); else closeSheet(); } else closeSheet();
+    return;
+  }
+  switch (t.dataset.act) {
+    case 'cal': {
+      const m = CUR.milestones[+t.dataset.idx]; saveDetailFields();
+      t.disabled = true;
+      if (await addToCalendar(CUR, m)) toast('Added to calendar with reminders');
+      renderAll(); if (CUR) openDetail(CUR.id); break;
+    }
+    case 'calAll': {
+      saveDetailFields();
+      const list = upcoming(CUR).filter(m => m.date >= today() && !CUR.cal[mKey(m)]);
+      if (!list.length) { toast('All upcoming dates are already in your calendar'); break; }
+      let n = 0; for (const m of list) if (await addToCalendar(CUR, m, true)) n++;
+      if (n) toast(`${n} date${n > 1 ? 's' : ''} added to calendar`);
+      renderAll(); openDetail(CUR.id); break;
+    }
+    case 'pin': CUR.pinned = !CUR.pinned; saveDetailFields(); openDetail(CUR.id); break;
+    case 'edit': saveDetailFields(); openEditor(CUR); break;
+    case 'delete': {
+      if (!confirm('Delete this call? Calendar events already added stay in your calendar.')) break;
+      const id = CUR.id; CUR = null; DB.items = DB.items.filter(i => i.id !== id);
+      if (SEED.some(s => s.id === id)) (DB.deletedSeed ||= []).push(id);
+      save(); closeSheet(); renderAll(); toast('Deleted'); break;
+    }
+    case 'msAdd': $('#msList').insertAdjacentHTML('beforeend', msEditRow({ type: 'deadline', date: '' }, Date.now())); break;
+    case 'msDel': t.closest('.ms-edit').remove(); break;
+    case 'useDate': {
+      const empty = [...document.querySelectorAll('#msList [data-f="date"]')].find(x => !x.value);
+      if (empty) empty.value = t.dataset.date;
+      else { $('#msList').insertAdjacentHTML('beforeend', msEditRow({ type: 'deadline', date: t.dataset.date }, Date.now())); }
+      t.classList.add('done'); break;
+    }
+    case 'saveEdit': saveEditor(); break;
+    case 'cancelEdit': if (EDIT && EDIT.item) openDetail(EDIT.item.id); else closeSheet(); break;
+    case 'pickCal': await pickCalendar(); break;
+    case 'toggleNotify': DB.settings.notify = !DB.settings.notify; save(); renderSettings(); break;
+    case 'toggleScope': DB.settings.widgetScope = DB.settings.widgetScope === 'tracked' ? 'all' : 'tracked'; save(); renderSettings(); break;
+    case 'pinWidget':
+      if (!isNative) { toast('Widgets are available in the Android app'); break; }
+      try { const r = await P.Cta.pinWidget(); if (!r.requested) toast('Long-press the home screen → Widgets → Call to Artists'); }
+      catch (e) { toast('Long-press the home screen → Widgets → Call to Artists'); }
+      break;
+    case 'refresh': refreshArtquest(true); break;
+    case 'export': exportData(); break;
+  }
+});
+$('#btnRefresh').addEventListener('click', () => refreshArtquest(true));
+$('#fab').addEventListener('click', () => { CUR = null; openEditor(null); });
+$('#q').addEventListener('input', e => { QUERY = e.target.value; renderCalls(); });
+document.addEventListener('change', e => {
+  if (e.target.id === 'remInput') {
+    const v = e.target.value.split(/[,\s]+/).map(Number).filter(n => Number.isInteger(n) && n > 0 && n <= 365);
+    DB.settings.reminders = [...new Set(v)].sort((a, b) => b - a).slice(0, 5);
+    if (!DB.settings.reminders.length) DB.settings.reminders = [28, 7, 1];
+    save(); renderSettings(); toast('Reminders: ' + DB.settings.reminders.join(', ') + ' days before');
+  }
+  if (e.target.id === 'notifyTime' && e.target.value) { DB.settings.notifyTime = e.target.value; save(); }
+  if (e.target.id === 'importFile' && e.target.files[0]) importData(e.target.files[0]);
+});
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible') return;
+  renderAll(); syncWidget(); checkShare();
+  const last = DB.settings.lastArtquest || 0;
+  if (Date.now() - last > 12 * 3600e3) refreshArtquest(false);
+});
+window.addEventListener('ctaShare', checkShare);
+
+/* ---------- Boot ---------- */
+(async function boot(){
+  await load();
+  renderAll();
+  save();
+  if (isNative) {
+    try { await P.Cta.scheduleRefresh(); } catch (e) {}
+    checkShare();
+    if (Date.now() - (DB.settings.lastArtquest || 0) > 12 * 3600e3) refreshArtquest(false);
+  }
+})();
+</script>
+</body>
+</html>
