@@ -2,7 +2,7 @@
 
 Personal Android app that tracks UK open calls for artists, plus US miniature exhibitions: deadlines, hand-in days, private views and fees. It adds dates to your calendar with reminders and shows a countdown widget on the home screen.
 
-**Build:** v0.2.0 (build 2, 2026-10-25) is shown on the Settings screen.
+**Build:** v0.3.0 (build 3, 2026-10-25) is shown on the Settings screen.
 
 ## What it does
 
@@ -11,6 +11,7 @@ Personal Android app that tracks UK open calls for artists, plus US miniature ex
 | Society and prize watch-list | Seeded with checked dates: NPG Portrait Award, Hilliard, Pastel Society, RBA, RI, RMS, plus RP, RA, Jackson's and RP Drawing as "expected". Unknown fields are left blank, never guessed. |
 | US miniature exhibitions | Open shows only: MPSGS (Washington DC) and MASF (Florida) with confirmed dates; Seaside Art Gallery (NC) and MonDak (MT) on the watch-list. Members-only shows are left out. Filter with the **USA** chip; US times show in ET and go into your calendar in UK time. |
 | US miniature exhibitions | Open shows only: MPSGS (Washington DC) and MASF (Florida) with confirmed dates; Seaside Art Gallery (NC) and MonDak (MT) on the watch-list. Members-only shows (Cider Painters of America, California Art Club) are left out. Filter with the **USA** chip; US times show in ET and go into your calendar in UK time. |
+| Browse exhibitions | Tick-box catalogue (Calls → Browse exhibitions, or Settings). Tick a society or prize to include it in your list, untick to hide it — notes and statuses are kept. Covers Mall Galleries societies (Pastel, RBA, RI, ROI, NEAC, RSMA, SWLA, SGFA, SWA, SBA, Discerning Eye, Hesketh Hubbard), RWS Open, SSA, VAS, RWA, RCA, RE IOPE and the US miniature shows. Not included: RBSA Annual (members only); Lynn Painter-Stainers (official site couldn't be verified). |
 | New calls | Reads the Artquest opportunities page on the phone (native HTTP, no server). Rechecks every 12 h when opened, and a daily background check sends a notification when new listings appear. |
 | Other sites | Share a page from Chrome or email into the app (Share → Call to Artists). Dates in the text are detected for you to confirm. CuratorSpace and a-n are not scraped, because of their terms and the a-n members-only paywall. |
 | Calendar | Writes directly to the Samsung or Google calendar you choose, with reminders 28, 7 and 1 days before (editable). A Google calendar shows in both apps. |

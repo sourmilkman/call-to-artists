@@ -31,6 +31,19 @@ main{padding:0 14px calc(90px + var(--bottom))}
 .view{display:none}.view.active{display:block}
 .toolbar input{width:100%;padding:11px 14px;border-radius:12px;border:1px solid var(--line);background:var(--panel);outline:none}
 .toolbar input:focus{border-color:var(--gold-dim)}
+.browse-btn{display:flex;align-items:center;gap:12px;width:100%;margin-top:10px;padding:11px 14px;border-radius:12px;border:1px dashed var(--gold-dim);background:none;text-align:left}
+.browse-btn>span:first-child{font-size:20px;color:var(--gold)}
+.browse-btn .bt{flex:1;min-width:0}.browse-btn small{display:block;color:var(--muted);font-size:12px}
+.browse-btn .chev{color:var(--gold);font-size:22px}
+.brow{display:flex;align-items:flex-start;gap:12px;padding:12px 4px;border-top:1px solid var(--line);cursor:pointer}
+.brow:first-child{border-top:none}
+.brow input{appearance:none;-webkit-appearance:none;flex:none;width:24px;height:24px;margin:1px 0 0;border-radius:7px;border:1.5px solid var(--gold-dim);background:var(--panel);display:grid;place-items:center}
+.brow input:checked{background:var(--gold);border-color:var(--gold)}
+.brow input:checked::after{content:"✓";color:var(--ink);font-weight:800;font-size:15px}
+.brow .bd{flex:1;min-width:0}.brow b{display:block;font:600 15px/1.25 var(--serif)}
+.brow small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
+.grp-h{display:flex;align-items:center;justify-content:space-between;margin:18px 2px 4px}
+.grp-h .section-h{margin:0}
 .chips{display:flex;gap:8px;overflow-x:auto;padding:12px 0 6px;scrollbar-width:none}
 .chips::-webkit-scrollbar{display:none}
 .chip{flex:none;padding:7px 13px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--muted);font-size:13px}
@@ -127,6 +140,7 @@ table.ledger tr.tot td{font-weight:700;color:var(--gold);border-bottom:none}
 <main>
   <section id="view-calls" class="view active">
     <div class="toolbar"><input id="q" type="search" placeholder="Search calls, societies, venues" autocomplete="off"></div>
+    <button class="browse-btn" data-act="browse"><span>☑</span><span class="bt"><b>Browse exhibitions</b><small id="browseSub">Tick the open calls you want in your list</small></span><span class="chev">›</span></button>
     <div class="chips" id="filterChips"></div>
     <div id="callList" class="list"></div>
     <p class="build" data-build></p>
@@ -157,8 +171,8 @@ table.ledger tr.tot td{font-weight:700;color:var(--gold);border-bottom:none}
 /* =========================================================
    Call to Artists — personal open-call deadline tracker
    ========================================================= */
-const BUILD = 'v0.2.0 · build 2 · 2026-10-25';
-const SEED_VERSION = 2;
+const BUILD = 'v0.3.0 · build 3 · 2026-10-25';
+const SEED_VERSION = 3;
 const AQ_URL = 'https://artquest.org.uk/opportunities/';
 const STORE_KEY = 'cta.data.v1';
 
@@ -212,24 +226,27 @@ const SEED = [
     confidence:'confirmed', kind:'call', venue:'Town Hall, Wells, Somerset', fee:'', prize:'', medium:'Miniatures', eligibility:'', platform:'',
     milestones:[{type:'receiving',date:'2027-04-05',end:'2027-04-12',label:'Artwork arrives for selection'},{type:'pv',date:'2027-06-04'},{type:'exhibition',date:'2027-06-05',end:'2027-06-12'}],
     notes:'Fees and size rules are in the Submission Guide on the society site.' },
-  { id:'ps-2027', title:'Pastel Society Annual Exhibition 2027 — open call', organiser:'The Pastel Society',
-    url:'https://www.artrabbit.com/artist-opportunities/2026/november/the-pastel-society-open-call-2027', source:'ArtRabbit listing',
-    sourceUrl:'https://www.artrabbit.com/artist-opportunities/2026/november/the-pastel-society-open-call-2027',
-    confidence:'listed', kind:'call', venue:'Mall Galleries, London', fee:'', prize:'More than £5,000 in prizes and awards', medium:'', eligibility:'', platform:'',
-    milestones:[{type:'deadline',date:'2026-11-20'}],
-    notes:'Deadline time, fee and receiving day not in the listing — check the Mall Galleries open-call page.' },
-  { id:'rba-2027', title:'Royal Society of British Artists 2027 — open call', organiser:'Royal Society of British Artists (RBA)',
-    url:'https://www.artrabbit.com/artist-opportunities/2027/january/the-royal-society-of-british-artists-open-call-2027', source:'ArtRabbit listing',
-    sourceUrl:'https://www.artrabbit.com/artist-opportunities/2027/january/the-royal-society-of-british-artists-open-call-2027',
-    confidence:'listed', kind:'call', venue:'Mall Galleries, London', fee:'', prize:'£15,000 in prizes, incl. £10,000 Huaicun Zhang Award for Excellence', medium:'', eligibility:'', platform:'',
-    milestones:[{type:'deadline',date:'2027-01-08'}],
-    notes:'Deadline time, fee and receiving day not in the listing — check the Mall Galleries open-call page.' },
-  { id:'ri-2027', title:'Royal Institute of Painters in Water Colours 2027 — open call', organiser:'Royal Institute of Painters in Water Colours (RI)',
-    url:'https://www.artrabbit.com/artist-opportunities/2027/january/royal-institute-of-painters-in-water-colours-open-call-2027', source:'ArtRabbit listing',
-    sourceUrl:'https://www.artrabbit.com/artist-opportunities/2027/january/royal-institute-of-painters-in-water-colours-open-call-2027',
-    confidence:'listed', kind:'call', venue:'Mall Galleries, London', fee:'', prize:'Over £10,000 in prizes, incl. the Winsor & Newton Prize', medium:'', eligibility:'', platform:'',
-    milestones:[{type:'deadline',date:'2027-01-22'}],
-    notes:'Deadline time, fee and receiving day not in the listing — check the Mall Galleries open-call page.' },
+  { id:'ps-2027', title:'Pastel Society 128th Annual Exhibition 2027', organiser:'The Pastel Society',
+    url:'https://www.mallgalleries.org.uk/open-calls/pastel-society', source:'Mall Galleries', sourceUrl:'https://www.mallgalleries.org.uk/open-calls/pastel-society',
+    confidence:'confirmed', kind:'call', venue:'Mall Galleries, London', fee:'£22 per work · £14.50 if 35 or under',
+    prize:'Over £5,000 incl. Caran d’Ache £1,000, Pastel Society £1,000, Yoshimoto £1,000', medium:'Pastel and dry media (conté, charcoal, chalk, pencil); mixed media if dry media dominate',
+    eligibility:'Up to 6 works entered, 4 selected; max 2.4 m longest side; made within the last two years; not shown at Mall Galleries before.', platform:'Mall Galleries online submission',
+    milestones:[{type:'deadline',date:'2026-11-20',time:'12:00'},{type:'notify',date:'2026-12-04',time:'12:00'},{type:'receiving',date:'2027-01-16',label:'Receiving day (selected works, 10am–5pm)'},{type:'pv',date:'2027-01-27',time:'17:00',label:'Private view (invite only)'},{type:'exhibition',date:'2027-01-27',end:'2027-02-13'},{type:'collection',date:'2027-02-18',label:'Collection of unsold work'}],
+    notes:'Submissions opened 17 Aug 2026. Fee includes free exhibition admission.' },
+  { id:'rba-2027', title:'Royal Society of British Artists Annual Exhibition 2027', organiser:'Royal Society of British Artists (RBA)',
+    url:'https://www.mallgalleries.org.uk/open-calls/royal-society-british-artists', source:'Mall Galleries', sourceUrl:'https://www.mallgalleries.org.uk/open-calls/royal-society-british-artists',
+    confidence:'confirmed', kind:'call', venue:'Mall Galleries, London', fee:'£22 per work · £14.50 if 35 or under',
+    prize:'Over £15,000 incl. £10,000 Huaicun Zhang Award for Excellence', medium:'Painting, sculpture, drawing, original prints (no photography)',
+    eligibility:'18+, worldwide. Up to 6 works entered, 4 selected; max 2.4 m longest side; not previously shown in London; no metal or clip frames.', platform:'Mall Galleries online submission',
+    milestones:[{type:'deadline',date:'2027-01-08',time:'12:00'},{type:'notify',date:'2027-01-15',time:'12:00'},{type:'receiving',date:'2027-02-13',label:'Receiving day (selected works, 10am–5pm)'},{type:'pv',date:'2027-02-25',time:'17:00',label:'Private view (invite only)'},{type:'exhibition',date:'2027-02-25',end:'2027-03-06'},{type:'collection',date:'2027-03-11',label:'Collection of unsold work'}],
+    notes:'Submissions opened 7 Sep 2026. Single-stage judging from images.' },
+  { id:'ri-2027', title:'Royal Institute of Painters in Water Colours 215th Exhibition 2027', organiser:'Royal Institute of Painters in Water Colours (RI)',
+    url:'https://www.mallgalleries.org.uk/open-calls/royal-institute-painters-water-colours', source:'Mall Galleries', sourceUrl:'https://www.mallgalleries.org.uk/open-calls/royal-institute-painters-water-colours',
+    confidence:'confirmed', kind:'call', venue:'Mall Galleries, London', fee:'£22 per work · £14.50 if 35 or under',
+    prize:'Over £15,000 incl. the Winsor & Newton Prize', medium:'Watercolour and water-soluble media (acrylic, ink, gouache, watercolour pencil); no water-soluble oils',
+    eligibility:'Up to 6 works entered, 4 selected; max 240 × 150 cm incl. frame; completed within the last three years.', platform:'Mall Galleries online submission',
+    milestones:[{type:'deadline',date:'2027-01-22',time:'14:00'},{type:'notify',date:'2027-02-05',time:'12:00'},{type:'receiving',date:'2027-03-13',label:'Receiving day (selected works, 10am–5pm)'},{type:'pv',date:'2027-03-23',time:'17:00',label:'Private view (invite only)'},{type:'exhibition',date:'2027-03-24',end:'2027-04-10'},{type:'collection',date:'2027-04-15',label:'Collection of unsold work'}],
+    notes:'Submissions opened 12 Oct 2026. Closed Easter Sunday and Monday (28–29 Mar 2027).' },
   { id:'rp-2027', title:'Royal Society of Portrait Painters Annual Exhibition 2027', organiser:'Royal Society of Portrait Painters (RP)',
     url:'https://www.mallgalleries.org.uk/open-calls/royal-society-portrait-painters', source:'Mall Galleries',
     sourceUrl:'https://www.mallgalleries.org.uk/open-calls/royal-society-portrait-painters',
@@ -260,6 +277,80 @@ const SEED = [
     url:'https://therp.co.uk/the-rp-drawing-prize/', source:'RP website', sourceUrl:'https://therp.co.uk/the-rp-drawing-prize/',
     confidence:'expected', kind:'watch', venue:'University of Hull Art Gallery', fee:'', prize:'£5,000', medium:'Drawing (portrait)', eligibility:'', platform:'',
     milestones:[], notes:'Next cycle not announced. Previous deadline: 28 July, 5pm.' },
+
+  /* ----- UK catalogue: off until ticked in Browse ----- */
+  { id:'uk-swa-166', defaultOff:true, title:'Society of Women Artists 166th Annual Open Exhibition 2027', organiser:'Society of Women Artists (SWA)',
+    url:'https://www.society-women-artists.org.uk/2026-exhibition', source:'SWA website', sourceUrl:'https://www.society-women-artists.org.uk/2026-exhibition',
+    confidence:'confirmed', kind:'call', venue:'Mall Galleries, London', fee:'£20 per work · £10 if aged 18–35 · members free', prize:'',
+    medium:'Painting, pastel, drawing, mixed media, sculpture, ceramics, glass, metal, fine art print (no photography)',
+    eligibility:'Members and non-members. Up to 6 works submitted, 4 shown; about 200 cm maximum.', platform:'Online only (SWA OESS)',
+    milestones:[{type:'open',date:'2026-12-01'},{type:'deadline',date:'2027-03-06'},{type:'notify',date:'2027-03-28',label:'Results (on or after)'},{type:'pv',date:'2027-06-23',label:'Private view & awards (10am–3pm)'},{type:'exhibition',date:'2027-06-22',end:'2027-06-26'}],
+    notes:'Delivery day and July collection date still to be confirmed by the SWA.' },
+  { id:'uk-sba-plantae27', defaultOff:true, title:'Society of Botanical Artists — Plantae 2027', organiser:'Society of Botanical Artists (SBA)',
+    url:'https://www.soc-botanical-artists.org/exhibitions/plantae-2027/', source:'SBA website', sourceUrl:'https://www.soc-botanical-artists.org/exhibitions/plantae-2027/',
+    confidence:'confirmed', kind:'call', venue:'Mall Galleries, London', fee:'', prize:'', medium:'Botanical art', eligibility:'Open to any artist, not only members.', platform:'',
+    milestones:[{type:'deadline',date:'2027-02-12',label:'Call closes'},{type:'exhibition',date:'2027-06-10',end:'2027-06-19'}],
+    notes:'Call opened 9 Sep 2026. Fees, size rules, hand-in and private view are not on the exhibition page — check the SBA’s Exhibition Information page.' },
+  { id:'uk-rws-open27', defaultOff:true, title:'RWS Open 2027', organiser:'Royal Watercolour Society (RWS)',
+    url:'https://www.royalwatercoloursociety.co.uk/competition', source:'RWS key dates', sourceUrl:'https://www.royalwatercoloursociety.co.uk/competition/key-dates',
+    confidence:'confirmed', kind:'call', venue:'Bankside Gallery (SE1) and RWS Gallery (WC2), London', fee:'', prize:'Range of prizes incl. RWS Young Artist Award',
+    medium:'Water-based media on paper', eligibility:'Artists at any career stage; original works on paper.', platform:'artopps.co.uk',
+    milestones:[{type:'deadline',date:'2026-12-08',time:'17:00'},{type:'notify',date:'2026-12-22',label:'Longlist announced'},{type:'notify',date:'2027-02-05',label:'Shortlist announced'},{type:'receiving',date:'2027-04-10',label:'Delivery to RWS Gallery (11am–5pm)'},{type:'receiving',date:'2027-04-12',label:'Delivery to Bankside Gallery (11am–5pm)'},{type:'pv',date:'2027-04-14',label:'Private view — RWS Gallery (invite only)'},{type:'pv',date:'2027-04-15',label:'Private view — Bankside (invite only)'},{type:'exhibition',date:'2027-04-16',end:'2027-05-03'},{type:'collection',date:'2027-05-04',label:'Collection of unsold work (11am–5pm)'}],
+    notes:'Relaunch of the former Contemporary Watercolour Competition. Fees are on the RWS “Entry Fees & Discounts” page.' },
+  { id:'uk-ssa-128', defaultOff:true, title:'Society of Scottish Artists 128th Annual Exhibition', organiser:'Society of Scottish Artists (SSA)',
+    url:'https://sca-net.org/?p=13533', source:'SCAN listing posted by the SSA', sourceUrl:'https://sca-net.org/?p=13533',
+    confidence:'listed', kind:'call', venue:'Royal Scottish Academy, Edinburgh', fee:'', prize:'', medium:'Painting, printmaking, photography, textiles, drawing, sculpture and more',
+    eligibility:'Members and non-members; selected work must be for sale.', platform:'',
+    milestones:[{type:'notify',date:'2026-11-05',end:'2026-11-06',label:'Pre-selection results'},{type:'pv',date:'2027-02-13'},{type:'exhibition',date:'2027-02-14',end:'2027-03-10'}],
+    notes:'Submissions closed 7 Oct 2026, 12 noon. Fees and size rules on the SSA website.' },
+  { id:'uk-de-2027', defaultOff:true, title:'Discerning Eye 2027', organiser:'Discerning Eye',
+    url:'https://www.discerningeye.org/exhibition', source:'Discerning Eye website', sourceUrl:'https://www.discerningeye.org/exhibition',
+    confidence:'expected', kind:'watch', venue:'Mall Galleries, London', fee:'', prize:'2026 prizes incl. £2,500 Founder’s Prize and a £500 Anthony Lester Portrait Prize',
+    medium:'Painting, drawing, printmaking, sculpture, photography', eligibility:'Small works: under 50 cm in any direction. UK-based artists.', platform:'', milestones:[],
+    notes:'2027 call not yet announced. 2026: selection complete (6,800+ entries); exhibition 13–21 Nov 2026 at Mall Galleries, free entry — worth a visit.' },
+  { id:'uk-neac-2027', defaultOff:true, title:'New English Art Club Annual Exhibition 2027', organiser:'New English Art Club (NEAC)',
+    url:'https://www.mallgalleries.org.uk/open-calls/new-english-art-club', source:'Mall Galleries', sourceUrl:'https://www.mallgalleries.org.uk/open-calls/new-english-art-club',
+    confidence:'expected', kind:'watch', venue:'Mall Galleries, London', fee:'', prize:'', medium:'', eligibility:'', platform:'Mall Galleries online submission', milestones:[],
+    notes:'2027 dates not yet announced. 2026 cycle: submissions 8 Dec 2025 – 20 Mar 2026 (12 noon); receiving 18 Apr; show 11–20 Jun; £22 per work (£14.50 if 35 or under); up to 6 entered, 3 selected; max 2.4 m.' },
+  { id:'uk-roi-2027', defaultOff:true, title:'Royal Institute of Oil Painters Annual Exhibition 2027', organiser:'Royal Institute of Oil Painters (ROI)',
+    url:'https://www.mallgalleries.org.uk/open-calls/royal-institute-oil-painters', source:'Mall Galleries', sourceUrl:'https://www.mallgalleries.org.uk/open-calls/royal-institute-oil-painters',
+    confidence:'expected', kind:'watch', venue:'Mall Galleries, London', fee:'', prize:'', medium:'Oil', eligibility:'', platform:'Mall Galleries online submission', milestones:[],
+    notes:'2027 dates not yet announced. 2026 cycle: submissions 8 Jun – 9 Oct (12 noon); receiving 14 Nov; show 26 Nov – 12 Dec 2026; £22 per work (£14.50 if 35 or under); up to 6 entered, 3 selected.' },
+  { id:'uk-rsma-2027', defaultOff:true, title:'Royal Society of Marine Artists Annual Exhibition 2027', organiser:'Royal Society of Marine Artists (RSMA)',
+    url:'https://www.mallgalleries.org.uk/open-calls/royal-society-marine-artists', source:'Mall Galleries', sourceUrl:'https://www.mallgalleries.org.uk/open-calls/royal-society-marine-artists',
+    confidence:'expected', kind:'watch', venue:'Mall Galleries, London', fee:'', prize:'', medium:'Marine subjects', eligibility:'', platform:'Mall Galleries online submission', milestones:[],
+    notes:'2027 dates not yet announced. 2026 cycle: submissions 13 Apr – 24 Jul (12 noon); receiving 5 Sep; show 16–26 Sep; £22 per work (£14.50 if 35 or under); up to 6 entered, 4 selected.' },
+  { id:'uk-swla-2027', defaultOff:true, title:'Society of Wildlife Artists — The Natural Eye 2027', organiser:'Society of Wildlife Artists (SWLA)',
+    url:'https://www.mallgalleries.org.uk/open-calls/society-wildlife-artists', source:'Mall Galleries', sourceUrl:'https://www.mallgalleries.org.uk/open-calls/society-wildlife-artists',
+    confidence:'expected', kind:'watch', venue:'Mall Galleries, London', fee:'', prize:'', medium:'Wildlife subjects', eligibility:'', platform:'Mall Galleries online submission', milestones:[],
+    notes:'2027 dates not yet announced. 2026 cycle: submissions 1 May – 7 Aug (12 noon); receiving 19 Sep; show 1–10 Oct; £22 per work (£14.50 if 35 or under); up to 6 works.' },
+  { id:'uk-sgfa-106', defaultOff:true, title:'Society of Graphic Fine Art 106th Annual Open Exhibition', organiser:'Society of Graphic Fine Art (SGFA)',
+    url:'https://sgfa.org.uk/', source:'Mall Galleries', sourceUrl:'https://www.mallgalleries.org.uk/node/140908',
+    confidence:'expected', kind:'watch', venue:'Mall Galleries, London', fee:'', prize:'', medium:'Drawing and works on paper', eligibility:'', platform:'', milestones:[],
+    notes:'2027 call not yet found. The 105th open exhibition ran 9–14 Mar 2026 at Mall Galleries.' },
+  { id:'uk-hhas-2027', defaultOff:true, title:'Hesketh Hubbard Life Drawing Bursaries 2027', organiser:'Hesketh Hubbard Art Society',
+    url:'https://www.mallgalleries.org.uk/open-calls/hesketh-hubbard-bursaries', source:'Mall Galleries', sourceUrl:'https://www.mallgalleries.org.uk/open-calls/hesketh-hubbard-bursaries',
+    confidence:'expected', kind:'watch', venue:'Mall Galleries, London', fee:'Free', prize:'Three year-long free life-drawing bursaries', medium:'', eligibility:'Ages 18–30 at close of submissions.', platform:'', milestones:[],
+    notes:'2027 dates not yet announced. Last deadline: 21 Nov 2025, 12 noon.' },
+  { id:'uk-rwa-174', defaultOff:true, title:'RWA 174 Annual Open Exhibition', organiser:'Royal West of England Academy (RWA)',
+    url:'https://www.rwa.org.uk/collections/events/products/173-rwa-open', source:'RWA', sourceUrl:'https://www.rwa.org.uk/collections/events/products/173-rwa-open',
+    confidence:'expected', kind:'watch', venue:'RWA, Bristol', fee:'', prize:'', medium:'', eligibility:'', platform:'', milestones:[],
+    notes:'Next call not yet announced. RWA 173: submissions 7 Apr – 22 Jun 2026; exhibition 12 Sep 2026 – 3 Jan 2027.' },
+  { id:'uk-vas-2027', defaultOff:true, title:'Visual Arts Scotland Annual Exhibition 2027 (RSA Building)', organiser:'Visual Arts Scotland (VAS)',
+    url:'https://www.visualartsscotland.org/opportunity/open-call-annual-exhibition-at-royal-scottish-academy-building-edinburgh-2027/', source:'VAS',
+    sourceUrl:'https://www.visualartsscotland.org/opportunity/open-call-annual-exhibition-at-royal-scottish-academy-building-edinburgh-2027/',
+    confidence:'confirmed', kind:'watch', venue:'Upper Galleries, Royal Scottish Academy, Edinburgh', fee:'£15 per submission (non-members, up to 5 works)', prize:'',
+    medium:'All visual arts and contemporary craft', eligibility:'Worldwide; members and non-members; made 2024 or later; no size limits.', platform:'', milestones:[],
+    notes:'Submissions closed 28 Aug 2026, 5pm. Exhibition January 2027 (exact dates not given). Track for the 2028 call.' },
+  { id:'uk-rca-open', defaultOff:true, title:'Royal Cambrian Academy Open Exhibition', organiser:'Royal Cambrian Academy of Art (RCA)',
+    url:'https://visitconwy.org.uk/whats-on/royal-cambrian-academy-open-exhibition-2025-conwy-p500931', source:'Visit Conwy', sourceUrl:'https://visitconwy.org.uk/whats-on/royal-cambrian-academy-open-exhibition-2025-conwy-p500931',
+    confidence:'expected', kind:'watch', venue:'Royal Cambrian Academy, Conwy', fee:'', prize:'', medium:'', eligibility:'UK artists.', platform:'', milestones:[],
+    notes:'Annual open; next dates not found. Its listings have appeared on CuratorSpace — share the page into the app when it is announced.' },
+  { id:'uk-iope', defaultOff:true, title:'International Original Print Exhibition (RE)', organiser:'Royal Society of Painter-Printmakers (RE)',
+    url:'https://www.banksidegallery.com/', source:'Bankside Gallery', sourceUrl:'https://www.re-printmakers.com/usr/library/documents/main/iope-application-guidelines-2025v2.pdf',
+    confidence:'expected', kind:'watch', venue:'Bankside Gallery, London', fee:'', prize:'', medium:'Original prints', eligibility:'', platform:'', milestones:[],
+    notes:'Last held in 2025; next edition not yet announced.' },
+
   /* ----- USA: open miniature exhibitions only (members-only shows excluded) ----- */
   { id:'us-mpsgs-93', region:'USA', title:'MPSGS 93rd Annual International Exhibition of Fine Art in Miniature', organiser:'Miniature Painters, Sculptors & Gravers Society of Washington, DC',
     url:'https://www.mpsgs.org', source:'MPSGS 2026 prospectus', sourceUrl:'https://www.mpsgs.org/exhibit/2026/MPSGS-ExhibitProspectus-2026.pdf',
@@ -341,6 +432,8 @@ function upcoming(item){
 }
 function keyMilestone(item){ return upcoming(item)[0] || null; }
 function isTracked(item){ return ACTIVE.includes(item.status); }
+const isIncluded = i => i.included !== false;
+const shown = () => DB.items.filter(isIncluded);
 function sortKey(item){ const k = keyMilestone(item); return k ? (k.date < today() ? today() : k.date) : '9999'; }
 
 /* ---------- Storage ---------- */
@@ -354,12 +447,16 @@ async function load(){
   mergeSeed();
 }
 function mergeSeed(){
+  const removed = DB.deletedSeed || [];
   for (const s of SEED) {
-    if ((DB.deletedSeed || []).includes(s.id)) continue;
     const ex = DB.items.find(i => i.id === s.id);
-    if (!ex) DB.items.push(blankUser({ region: 'UK', ...JSON.parse(JSON.stringify(s)), seeded: true }));
+    if (!ex) {
+      const { defaultOff, ...rest } = JSON.parse(JSON.stringify(s));
+      DB.items.push(blankUser({ region: 'UK', ...rest, seeded: true, included: !(defaultOff || removed.includes(s.id)) }));
+    }
     else if (DB.seedVersion < SEED_VERSION && !ex.userEdited) for (const f of SEED_FIELDS) ex[f] = s[f] === undefined ? (f === 'region' ? 'UK' : '') : JSON.parse(JSON.stringify(s[f]));
   }
+  delete DB.deletedSeed;
   DB.seedVersion = SEED_VERSION;
 }
 function blankUser(o){
@@ -380,7 +477,7 @@ function save(){
 /* ---------- Render: Calls ---------- */
 function filtered(){
   const t = today(), q = QUERY.trim().toLowerCase();
-  let list = DB.items.filter(i => {
+  let list = shown().filter(i => {
     if (q && !`${i.title} ${i.organiser} ${i.venue} ${i.notes} ${i.myNotes} ${i.medium}`.toLowerCase().includes(q)) return false;
     const up = upcoming(i).length > 0, hasDates = (i.milestones || []).length > 0;
     switch (FILTER) {
@@ -398,8 +495,9 @@ function filtered(){
   return list;
 }
 function renderChips(){
-  const c = { upcoming:0, watch:0, new:0, past:0, uk:0, usa:0, all:DB.items.length };
-  for (const i of DB.items) {
+  const S = shown();
+  const c = { upcoming:0, watch:0, new:0, past:0, uk:0, usa:0, all:S.length };
+  for (const i of S) {
     const up = upcoming(i).length > 0, has = (i.milestones || []).length > 0;
     if (up) c.upcoming++; if (i.kind === 'watch' || !has) c.watch++;
     if (i.discovered && !i.seen) c.new++; if (has && !up) c.past++;
@@ -425,7 +523,7 @@ function cardHTML(i){
   if (i.discovered && !i.seen) tags.push('<span class="tag new">New</span>');
   if (i.status) tags.push(`<span class="tag gold">${esc(STATUS_LABEL[i.status])}</span>`);
   if (i.confidence) tags.push(`<span class="tag ${i.confidence === 'listed' ? 'warn' : ''}">${esc(CONF[i.confidence]?.[0] || '')}</span>`);
-  if (i.fee) tags.push(`<span class="tag">${esc(i.fee)}</span>`);
+  if (i.fee) tags.push(`<span class="tag">${esc(i.fee.split(' · ')[0])}</span>`);
   if (i.source === 'Artquest') tags.push('<span class="tag">Artquest</span>');
   if (i.region === 'USA') tags.push('<span class="tag">USA</span>');
   if (Object.keys(i.cal || {}).length) tags.push('<span class="tag gold">In calendar</span>');
@@ -441,8 +539,8 @@ function renderCalls(){
     : `<div class="empty">${FILTER === 'upcoming' ? 'No upcoming dates. Tap + to add a call, or ↻ to check Artquest.' : 'Nothing here yet.'}</div>`;
 }
 function renderHeadline(){
-  const tracked = DB.items.filter(isTracked);
-  const pool = tracked.length ? tracked : DB.items;
+  const tracked = shown().filter(isTracked);
+  const pool = tracked.length ? tracked : shown();
   let best = null;
   for (const i of pool) for (const m of upcoming(i)) {
     if (m.date < today() || m.type === 'exhibition') continue;
@@ -455,7 +553,7 @@ function renderHeadline(){
 
 /* ---------- Render: Tracker ---------- */
 function renderTracker(){
-  const groups = STATUSES.filter(([k]) => k).map(([k, l]) => [l, DB.items.filter(i => i.status === k)]).filter(([, a]) => a.length);
+  const groups = STATUSES.filter(([k]) => k).map(([k, l]) => [l, shown().filter(i => i.status === k)]).filter(([, a]) => a.length);
   $('#trackerList').innerHTML = groups.length
     ? groups.map(([l, a]) => `<div class="section-h">${esc(l)} · ${a.length}</div><div class="list">${a.sort((x,y)=>sortKey(x).localeCompare(sortKey(y))).map(cardHTML).join('')}</div>`).join('')
     : '<div class="empty">Open a call and set a status (Interested, Submitted…) to track it here. Tracked calls drive your widget and reminders.</div>';
@@ -513,6 +611,7 @@ function renderSettings(){
   </div>
   <div class="section-h">Data</div>
   <div class="set">
+    <div class="set-row"><div class="t">Choose exhibitions<small>Tick which societies and prizes appear in your list</small></div><button class="btn small" data-act="browse">Browse</button></div>
     <div class="set-row"><div class="t">Back up<small>JSON file of all calls, statuses and ledger</small></div><button class="btn small" data-act="export">Export</button></div>
     <div class="set-row"><div class="t">Restore<small>Replaces current data</small></div>
       <label class="btn small">Import<input type="file" id="importFile" accept="application/json,.json" hidden></label></div>
@@ -523,6 +622,7 @@ function renderSettings(){
 function renderAll(){
   renderHeadline(); renderCalls(); renderTracker(); renderLedger(); renderSettings();
   document.querySelectorAll('[data-build]').forEach(e => e.textContent = BUILD);
+  updateBrowseSub();
 }
 
 /* ---------- Sheet ---------- */
@@ -587,7 +687,7 @@ function openDetail(id){
     </div>
     <div class="row-btns" style="margin-top:18px">
       <button class="btn" data-act="edit">Edit details</button>
-      <button class="btn danger" data-act="delete">Delete</button>
+      <button class="btn danger" data-act="delete">${SEED.some(s => s.id === i.id) ? 'Remove from my list' : 'Delete'}</button>
     </div>`, () => { saveDetailFields(); });
 }
 function saveDetailFields(){
@@ -759,7 +859,7 @@ function rescheduleNotifications(){
       if (!DB.settings.notify) return;
       const [hh, mm] = DB.settings.notifyTime.split(':').map(Number);
       const now = Date.now(), list = [];
-      for (const i of DB.items) {
+      for (const i of shown()) {
         if (!isTracked(i)) continue;
         const pre = ['interested', 'preparing'].includes(i.status);
         for (const m of i.milestones || []) {
@@ -784,9 +884,9 @@ function rescheduleNotifications(){
 /* ---------- Widget ---------- */
 function syncWidget(){
   if (!isNative) return;
-  let pool = DB.items;
+  let pool = shown();
   if (DB.settings.widgetScope === 'tracked') {
-    const t = DB.items.filter(i => isTracked(i) || i.pinned);
+    const t = pool.filter(i => isTracked(i) || i.pinned);
     if (t.length) pool = t;
   }
   const out = [];
@@ -897,6 +997,55 @@ function importData(file){
   fr.readAsText(file);
 }
 
+
+/* ---------- Browse: tick-box catalogue ---------- */
+let BROWSE = { q: '', region: 'all' };
+function browseGroups(){
+  const q = BROWSE.q.trim().toLowerCase();
+  const match = i => (!q || `${i.title} ${i.organiser} ${i.venue} ${i.medium}`.toLowerCase().includes(q)) &&
+    (BROWSE.region === 'all' || (i.region || 'UK') === (BROWSE.region === 'usa' ? 'USA' : 'UK'));
+  const byTitle = (a, b) => a.title.localeCompare(b.title);
+  const seedIds = new Set(SEED.map(s => s.id));
+  return [
+    ['UK societies, prizes & open calls', DB.items.filter(i => seedIds.has(i.id) && (i.region || 'UK') === 'UK' && match(i)).sort(byTitle)],
+    ['USA — open miniature exhibitions', DB.items.filter(i => seedIds.has(i.id) && i.region === 'USA' && match(i)).sort(byTitle)],
+    ['Found on Artquest', DB.items.filter(i => i.source === 'Artquest' && match(i)).sort((a, b) => sortKey(a).localeCompare(sortKey(b)))],
+    ['Added by me', DB.items.filter(i => i.confidence === 'mine' && match(i)).sort(byTitle)]
+  ].filter(([, a]) => a.length);
+}
+function browseLine(i){
+  const k = keyMilestone(i);
+  const when = k ? `${mLabel(k)} · ${fmtDate(k.date)}` : (i.kind === 'watch' ? 'Dates not yet announced' : 'Dates passed');
+  return [CONF[i.confidence]?.[0], when].filter(Boolean).join(' · ');
+}
+function renderBrowseList(){
+  const el = document.getElementById('browseList'); if (!el) return;
+  const groups = browseGroups();
+  el.innerHTML = groups.length ? groups.map(([h, a], gi) => {
+    const on = a.filter(isIncluded).length;
+    return `<div class="grp-h"><div class="section-h">${esc(h)} · ${on}/${a.length}</div>
+      <button class="btn small ghost" data-act="browseAll" data-g="${gi}" data-on="${on === a.length ? 0 : 1}">${on === a.length ? 'None' : 'All'}</button></div>
+      <div class="set" style="padding:0 10px">${a.map(i => `<label class="brow"><input type="checkbox" data-inc="${esc(i.id)}" ${isIncluded(i) ? 'checked' : ''}>
+        <span class="bd"><b>${esc(i.title)}</b><small>${esc([i.organiser, i.venue].filter(Boolean).join(' · '))}</small><small>${esc(browseLine(i))}</small></span></label>`).join('')}</div>`;
+  }).join('') : '<div class="empty">No matches.</div>';
+}
+function openBrowse(){
+  CUR = null;
+  openSheet(`<h2>Browse exhibitions</h2>
+    <p class="sub">Tick to include in your list, untick to hide. Hidden calls keep your notes and statuses.</p>
+    <input class="in" id="browseQ" type="search" placeholder="Search societies, venues, media" value="${esc(BROWSE.q)}">
+    <div class="chips">${[['all','All'],['uk','UK'],['usa','USA']].map(([k, l]) => `<button class="chip ${BROWSE.region === k ? 'on' : ''}" data-bregion="${k}">${l}</button>`).join('')}</div>
+    <div id="browseList"></div>
+    <div class="row-btns" style="margin-top:16px"><button class="btn primary" data-close>Done</button></div>`, () => renderAll());
+  renderBrowseList();
+}
+function updateBrowseSub(){
+  const e = document.getElementById('browseSub'); if (!e) return;
+  const seedIds = new Set(SEED.map(s => s.id));
+  const all = DB.items.filter(i => seedIds.has(i.id)), on = all.filter(isIncluded).length;
+  e.textContent = `${on} of ${all.length} societies & prizes in your list — tick to add more`;
+}
+
 /* ---------- Events ---------- */
 document.addEventListener('click', async e => {
   const t = e.target.closest('button, [data-open], [data-close], a'); if (!t) return;
@@ -908,6 +1057,7 @@ document.addEventListener('click', async e => {
     window.scrollTo(0, 0); return;
   }
   if (t.dataset.filter) { FILTER = t.dataset.filter; renderCalls(); return; }
+  if (t.dataset.bregion) { BROWSE.region = t.dataset.bregion; t.parentElement.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c === t)); renderBrowseList(); return; }
   if (t.dataset.open) return openDetail(t.dataset.open);
   if (t.dataset.status !== undefined && CUR) {
     saveDetailFields(); CUR.status = t.dataset.status; save(); renderAll(); openDetail(CUR.id);
@@ -940,9 +1090,10 @@ document.addEventListener('click', async e => {
     case 'pin': CUR.pinned = !CUR.pinned; saveDetailFields(); openDetail(CUR.id); break;
     case 'edit': saveDetailFields(); openEditor(CUR); break;
     case 'delete': {
+      const seeded = SEED.some(s => s.id === CUR.id);
+      if (seeded) { CUR.included = false; CUR = null; save(); closeSheet(); renderAll(); toast('Removed — re-tick it any time in Browse'); break; }
       if (!confirm('Delete this call? Calendar events already added stay in your calendar.')) break;
       const id = CUR.id; CUR = null; DB.items = DB.items.filter(i => i.id !== id);
-      if (SEED.some(s => s.id === id)) (DB.deletedSeed ||= []).push(id);
       save(); closeSheet(); renderAll(); toast('Deleted'); break;
     }
     case 'msAdd': $('#msList').insertAdjacentHTML('beforeend', msEditRow({ type: 'deadline', date: '' }, Date.now())); break;
@@ -965,11 +1116,17 @@ document.addEventListener('click', async e => {
       break;
     case 'refresh': refreshArtquest(true); break;
     case 'export': exportData(); break;
+    case 'browse': openBrowse(); break;
+    case 'browseAll': {
+      const g = browseGroups()[+t.dataset.g]; if (!g) break;
+      const val = t.dataset.on === '1'; g[1].forEach(i => i.included = val); save(); renderBrowseList(); break;
+    }
   }
 });
 $('#btnRefresh').addEventListener('click', () => refreshArtquest(true));
 $('#fab').addEventListener('click', () => { CUR = null; openEditor(null); });
 $('#q').addEventListener('input', e => { QUERY = e.target.value; renderCalls(); });
+document.addEventListener('input', e => { if (e.target.id === 'browseQ') { BROWSE.q = e.target.value; renderBrowseList(); } });
 document.addEventListener('change', e => {
   if (e.target.id === 'remInput') {
     const v = e.target.value.split(/[,\s]+/).map(Number).filter(n => Number.isInteger(n) && n > 0 && n <= 365);
@@ -979,6 +1136,10 @@ document.addEventListener('change', e => {
   }
   if (e.target.id === 'notifyTime' && e.target.value) { DB.settings.notifyTime = e.target.value; save(); }
   if (e.target.id === 'importFile' && e.target.files[0]) importData(e.target.files[0]);
+  if (e.target.dataset && e.target.dataset.inc) {
+    const it = DB.items.find(i => i.id === e.target.dataset.inc);
+    if (it) { it.included = e.target.checked; save(); renderBrowseList(); }
+  }
 });
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState !== 'visible') return;
