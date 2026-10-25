@@ -174,8 +174,8 @@ table.ledger tr.tot td{font-weight:700;color:var(--gold);border-bottom:none}
 /* =========================================================
    Call to Artists — personal open-call deadline tracker
    ========================================================= */
-const BUILD = 'v0.3.2 · build 5 · 2026-10-25';
-const SEED_VERSION = 4;
+const BUILD = 'v0.4.0 · build 6 · 2026-10-25';
+const SEED_VERSION = 5;
 const AQ_URL = 'https://artquest.org.uk/opportunities/';
 const STORE_KEY = 'cta.data.v1';
 
@@ -278,7 +278,7 @@ const SEED = [
   { id:'rms-2026', title:'RMS Annual Exhibition 2026', organiser:'The Royal Society of Miniature Painters, Sculptors and Gravers',
     url:'https://royal-miniature-society.org.uk/', source:'RMS exhibition information for members',
     sourceUrl:'https://royal-miniature-society.org.uk/wp-content/uploads/2026/08/Exhibition-Information-for-Members-Associates-and-Students.pdf',
-    confidence:'confirmed', kind:'call', venue:'Alliston Centre, Royal Agricultural University, Cirencester', fee:'', prize:'', medium:'Miniatures', eligibility:'', platform:'',
+    commission:40, confidence:'confirmed', kind:'call', venue:'Alliston Centre, Royal Agricultural University, Cirencester', fee:'', prize:'', medium:'Miniatures', eligibility:'', platform:'',
     milestones:[{type:'deadline',date:'2026-08-28',label:'Online entry'},{type:'exhibition',date:'2026-10-24',end:'2026-11-02'}],
     notes:'Online entry deadline was 28 Aug 2026. 40% commission on sales. Add collection date when confirmed.' },
   { id:'rms-2027', title:'RMS Annual Exhibition 2027', organiser:'The Royal Society of Miniature Painters, Sculptors and Gravers',
@@ -366,7 +366,7 @@ const SEED = [
   /* ----- USA: open miniature exhibitions only (members-only shows excluded) ----- */
   { id:'us-mpsgs-93', region:'USA', title:'MPSGS 93rd Annual International Exhibition of Fine Art in Miniature', organiser:'Miniature Painters, Sculptors & Gravers Society of Washington, DC',
     url:'https://www.mpsgs.org', source:'MPSGS 2026 prospectus', sourceUrl:'https://www.mpsgs.org/exhibit/2026/MPSGS-ExhibitProspectus-2026.pdf',
-    confidence:'confirmed', kind:'call', venue:'The Mansion at Strathmore, North Bethesda, MD',
+    commission:40, confidence:'confirmed', kind:'call', venue:'The Mansion at Strathmore, North Bethesda, MD',
     fee:'$35 members · $40 non-members (hand-deliver) · $55 non-members (mailed) · +$15 return outside the US',
     prize:'', medium:'Miniatures (painting, graphics, sculpture)',
     eligibility:'Image ≤ 25 sq in; outside frame ≤ 56 sq in; frame width and depth ≤ 1¼″; sculpture ≤ 6″ incl. base; life-size images not accepted; no plastic or easel-back frames; no giclée/digital/photographic work. Up to 3 works, all for sale (min $100). Membership not required.',
@@ -379,7 +379,7 @@ const SEED = [
     notes:'2027 prospectus not yet published. 2026 cycle for reference: work accepted from 8 Aug, deadline 5 Sep (receipt in the US); show late Nov to early Jan. Allow international shipping time.' },
   { id:'us-masf-52', region:'USA', title:'MASF 52nd Annual International Miniature Art Exhibition', organiser:'Miniature Art Society of Florida',
     url:'https://www.miniature-art.com', source:'MASF 2027 prospectus', sourceUrl:'https://miniature-art.com/2027/2027_Exhibition_Prospectus.pdf',
-    confidence:'confirmed', kind:'call', venue:'Dunedin Fine Arts Center, Dunedin, FL',
+    commission:35, confidence:'confirmed', kind:'call', venue:'Dunedin Fine Arts Center, Dunedin, FL',
     fee:'$40 members · $50 non-members · $35 handling for return outside the US',
     prize:'', medium:'Miniatures (2D and sculpture)',
     eligibility:'Image ≤ 25 sq in; frame ≤ 64 sq in with no side over 9″; ≤ 1 lb and ≤ 1″ deep; sculpture ≤ 8″ incl. base. Up to 6 works per entry fee (one may be NFS, at least one for sale). Open to non-members.',
@@ -399,7 +399,7 @@ const SEED = [
     confidence:'expected', kind:'watch', venue:'MonDak Heritage Center, Sidney, MT', fee:'', prize:'', medium:'Miniatures', eligibility:'', platform:'', milestones:[],
     notes:'2026 dates not published at last check — the 2025 deadline was 28 Oct, so this year’s may be imminent or gone; check now. 2025 rules for reference: $10 first piece, $8 each extra; image ≤ 5×7″; 1/6 scale rule; sculpture ≤ 216 cu in; 30% commission.' }
 ];
-const SEED_FIELDS = ['region','title','organiser','url','source','sourceUrl','confidence','kind','venue','fee','prize','medium','eligibility','platform','milestones','notes'];
+const SEED_FIELDS = ['commission','region','title','organiser','url','source','sourceUrl','confidence','kind','venue','fee','prize','medium','eligibility','platform','milestones','notes'];
 
 /* ---------- State ---------- */
 let DB = { seedVersion: 0, items: [], settings: {
@@ -422,6 +422,21 @@ const fmtDate = (s, long) => parseISO(s).toLocaleDateString('en-GB', long
   : { day:'numeric', month:'short', year:'numeric' });
 const money = v => { const n = parseFloat(v); return isFinite(n) ? n : 0; };
 const gbp = n => '£' + n.toFixed(2).replace(/\.00$/, '');
+const curOf = i => i.region === 'USA' ? '$' : '£';
+const cash = (n, c = '£') => (n < 0 ? '−' : '') + c + Math.abs(n).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const VAT = 0.2;
+function rateOf(i){ const r = i.commissionRate !== undefined && i.commissionRate !== '' ? i.commissionRate : i.commission; const n = parseFloat(r); return isFinite(n) ? n : null; }
+function workCalc(i, price){
+  const p = money(price), r = rateOf(i);
+  if (r === null) return { price: p, comm: null, vat: 0, net: null };
+  const comm = p * r / 100, vat = i.vatOnComm ? comm * VAT : 0;
+  return { price: p, comm, vat, net: p - comm - vat };
+}
+function salesTotals(i){
+  const t = { asking: 0, net: 0, soldNet: 0, soldGross: 0, known: rateOf(i) !== null };
+  for (const w of i.works || []) { const c = workCalc(i, w.price); t.asking += c.price; t.net += c.net || 0; if (w.sold) { t.soldNet += c.net ?? c.price; t.soldGross += c.price; } }
+  return t;
+}
 const uid = () => 'u' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 function hash(s){ let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) | 0; return (h >>> 0).toString(36); }
 let toastT;
@@ -472,7 +487,7 @@ function mergeSeed(){
   DB.seedVersion = SEED_VERSION;
 }
 function blankUser(o){
-  return { status:'', myNotes:'', feePaid:'', costs:'', income:'', cal:{}, pinned:false, seen:true, addedAt: today(), ...o };
+  return { status:'', myNotes:'', feePaid:'', costs:'', income:'', works:[], commissionRate:'', vatOnComm:false, cal:{}, pinned:false, seen:true, addedAt: today(), ...o };
 }
 let saveT;
 function save(){
@@ -585,19 +600,26 @@ function renderTracker(){
 /* ---------- Render: Ledger ---------- */
 function itemYear(i){ const d = (i.milestones || []).find(m => m.type === 'deadline') || (i.milestones || [])[0]; return (d ? d.date : i.addedAt || today()).slice(0, 4); }
 function renderLedger(){
-  const rows = DB.items.filter(i => money(i.feePaid) || money(i.costs) || money(i.income));
-  if (!rows.length) { $('#ledger').innerHTML = '<div class="empty">Record entry fees, framing/courier costs and sales or prize income on any call — totals by year appear here.</div>'; return; }
+  const rows = DB.items.filter(i => money(i.feePaid) || money(i.costs) || money(i.income) || (i.works || []).some(w => money(w.price)));
+  if (!rows.length) { $('#ledger').innerHTML = '<div class="empty">Add artworks and prices on any call (Artwork &amp; sales), plus entry fees and costs — expected and actual income by year appear here.</div>'; return; }
   const byYear = {};
   rows.forEach(i => (byYear[itemYear(i)] ||= []).push(i));
   $('#ledger').innerHTML = Object.keys(byYear).sort().reverse().map(y => {
-    const a = byYear[y]; let F = 0, C = 0, I = 0;
-    const body = a.map(i => { const f = money(i.feePaid), c = money(i.costs), n = money(i.income); F += f; C += c; I += n;
-      return `<tr data-open="${esc(i.id)}"><td>${esc(i.title)}</td><td>${f ? gbp(f) : ''}</td><td>${c ? gbp(c) : ''}</td><td>${n ? gbp(n) : ''}</td></tr>`; }).join('');
-    const net = I - F - C;
-    return `<div class="section-h">${y}</div><div class="set" style="padding:6px 12px"><table class="ledger">
-      <tr><th>Call</th><th>Fees</th><th>Costs</th><th>Income</th></tr>${body}
-      <tr class="tot"><td>Total</td><td>${gbp(F)}</td><td>${gbp(C)}</td><td>${gbp(I)}</td></tr></table>
-      <p class="sub" style="margin:8px 0 6px">Net ${net >= 0 ? 'return' : 'spend'}: <b style="color:${net >= 0 ? 'var(--green)' : 'var(--amber)'}">${gbp(Math.abs(net))}</b></p></div>`;
+    const T = {};
+    const body = byYear[y].map(i => {
+      const c = curOf(i), st = salesTotals(i), f = money(i.feePaid), k = money(i.costs);
+      const inc = money(i.income) + st.soldNet;
+      const pot = i.status === 'rejected' ? 0 : st.net;
+      const t = (T[c] ||= { F: 0, C: 0, I: 0, P: 0, O: 0 }); t.F += f; t.C += k; t.I += inc; t.P += pot; t.O += money(i.income);
+      return `<tr data-open="${esc(i.id)}"><td>${esc(i.title)}</td><td>${f ? cash(f, c) : ''}</td><td>${k ? cash(k, c) : ''}</td><td>${pot ? cash(pot, c) : ''}</td><td>${inc ? cash(inc, c) : ''}</td></tr>`;
+    }).join('');
+    const tots = Object.entries(T).map(([c, t]) => `<tr class="tot"><td>Total ${c}</td><td>${cash(t.F, c)}</td><td>${cash(t.C, c)}</td><td>${cash(t.P, c)}</td><td>${cash(t.I, c)}</td></tr>`).join('');
+    const nets = Object.entries(T).map(([c, t]) => { const net = t.I - t.F - t.C;
+      return `Net so far ${c}: <b style="color:${net >= 0 ? 'var(--green)' : 'var(--amber)'}">${cash(net, c)}</b> · if all sell: <b>${cash(t.P + t.O - t.F - t.C, c)}</b>`; }).join('<br>');
+    return `<div class="section-h">${y}</div><div class="set" style="padding:6px 12px;overflow-x:auto"><table class="ledger">
+      <tr><th>Call</th><th>Fees</th><th>Costs</th><th>If sold</th><th>Received</th></tr>${body}${tots}</table>
+      <p class="sub" style="margin:8px 0 6px">${nets}</p>
+      <p class="sub" style="margin:0 0 6px;font-size:11.5px">“If sold” = your share after commission if every listed work sells. “Received” = sold works plus other income.</p></div>`;
   }).join('');
 }
 
@@ -708,12 +730,14 @@ function openDetail(id){
     <div class="section-h">My status</div>
     <div class="statuses">${STATUSES.map(([k, l]) => `<button class="chip ${i.status === k ? 'on' : ''}" data-status="${k}">${l}</button>`).join('')}</div>
     <div class="row-btns"><button class="btn small ${i.pinned ? 'done' : ''}" data-act="pin">${i.pinned ? '★ On widget' : '☆ Show on widget'}</button></div>
+    <div class="section-h">Artwork &amp; sales</div>
+    <div class="set" style="padding:10px 12px" id="salesBox">${salesHTML(i)}</div>
     <label class="f">My notes (artwork, framing, courier…)</label>
     <textarea class="in" id="myNotes" placeholder="e.g. Entering ‘Portrait of M.’ – oval frame, 9 × 7 cm">${esc(i.myNotes)}</textarea>
     <div class="grid3">
-      <div><label class="f">Fees paid £</label><input class="in" id="feePaid" inputmode="decimal" value="${esc(i.feePaid)}"></div>
-      <div><label class="f">Costs £</label><input class="in" id="costs" inputmode="decimal" value="${esc(i.costs)}"></div>
-      <div><label class="f">Income £</label><input class="in" id="income" inputmode="decimal" value="${esc(i.income)}"></div>
+      <div><label class="f">Fees paid ${curOf(i)}</label><input class="in" id="feePaid" inputmode="decimal" value="${esc(i.feePaid)}"></div>
+      <div><label class="f">Costs ${curOf(i)}</label><input class="in" id="costs" inputmode="decimal" value="${esc(i.costs)}"></div>
+      <div><label class="f">Other income ${curOf(i)}</label><input class="in" id="income" inputmode="decimal" value="${esc(i.income)}" placeholder="prizes"></div>
     </div>
     <div class="row-btns" style="margin-top:18px">
       <button class="btn" data-act="edit">Edit details</button>
@@ -725,7 +749,69 @@ function saveDetailFields(){
   const g = id => { const e = document.getElementById(id); return e ? e.value : null; };
   const n = g('myNotes'); if (n === null) return;
   CUR.myNotes = n; CUR.feePaid = g('feePaid'); CUR.costs = g('costs'); CUR.income = g('income');
+  readSales();
   save(); renderAll();
+}
+
+
+/* ---------- Artwork & sales ---------- */
+function salesHTML(i){
+  const c = curOf(i), r = rateOf(i), works = i.works || [];
+  const rows = works.map((w, k) => {
+    const x = workCalc(i, w.price);
+    const line = !money(w.price) ? 'Enter the sale price'
+      : x.net === null ? 'Add the commission rate to see what you receive'
+      : `${cash(x.price, c)} − ${cash(x.comm, c)} commission${x.vat ? ` − ${cash(x.vat, c)} VAT` : ''} = <b style="color:var(--gold)">${cash(x.net, c)}</b> to you`;
+    return `<div class="ms-edit" data-work="${k}" style="background:var(--ink)">
+      <div style="display:grid;grid-template-columns:1fr 110px;gap:8px">
+        <input class="in" data-w="title" placeholder="Artwork title" value="${esc(w.title || '')}">
+        <input class="in" data-w="price" inputmode="decimal" placeholder="Price ${c}" value="${esc(w.price || '')}">
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:8px">
+        <small class="sub" style="flex:1;margin:0" data-wline>${line}</small>
+        <label class="btn small ${w.sold ? 'done' : ''}" style="display:flex;gap:6px;align-items:center"><input type="checkbox" data-w="sold" ${w.sold ? 'checked' : ''} style="accent-color:var(--gold)">Sold</label>
+        <button class="btn small ghost" data-act="workDel" data-k="${k}" aria-label="Remove artwork">×</button>
+      </div></div>`;
+  }).join('');
+  const t = salesTotals(i);
+  const summary = works.length && t.asking ? `<div class="note" style="margin:10px 0 0">
+      ${works.length} work${works.length > 1 ? 's' : ''} · asking ${cash(t.asking, c)}${t.known ? ` · <b>${cash(t.net, c)}</b> to you if all sell` : ''}${t.soldGross ? `<br>Sold: ${cash(t.soldGross, c)} → <b style="color:var(--green)">${cash(t.soldNet, c)}</b> to you` : ''}</div>` : '';
+  const seeded = i.commission !== undefined && i.commission !== '' ;
+  return `<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span class="sub" style="margin:0">Commission</span>
+      <input class="in" id="commRate" inputmode="decimal" style="width:80px;text-align:center" placeholder="—" value="${esc(i.commissionRate !== '' && i.commissionRate !== undefined ? i.commissionRate : (seeded ? i.commission : ''))}"><span>%</span>
+      <label style="display:flex;gap:6px;align-items:center;font-size:13px;color:var(--muted)"><input type="checkbox" id="vatComm" ${i.vatOnComm ? 'checked' : ''} style="accent-color:var(--gold)">+ VAT on commission</label>
+    </div>
+    <small class="sub" style="display:block;margin:6px 0 0">${seeded ? 'Rate from the organiser’s prospectus — edit if it differs.' : r === null ? 'Rate not known — check the prospectus and enter it here.' : 'Your rate.'} Tick VAT if the gallery adds VAT to its commission.</small>
+    ${rows}
+    <button class="btn small" data-act="workAdd" style="margin-top:8px">+ Add artwork</button>
+    ${summary}`;
+}
+function readSales(){
+  if (!CUR || !document.getElementById('salesBox')) return;
+  const rate = document.getElementById('commRate');
+  if (rate) {
+    const v = rate.value.trim();
+    CUR.commissionRate = (v === '' || (CUR.commission !== undefined && String(CUR.commission) === v)) ? '' : v;
+  }
+  const vat = document.getElementById('vatComm'); if (vat) CUR.vatOnComm = vat.checked;
+  CUR.works = [...document.querySelectorAll('#salesBox [data-work]')].map(r => ({
+    title: r.querySelector('[data-w="title"]').value.trim(),
+    price: r.querySelector('[data-w="price"]').value.replace(/[£$,\s]/g, ''),
+    sold: r.querySelector('[data-w="sold"]').checked
+  }));
+}
+function refreshSales(keepFocus){
+  readSales();
+  const box = document.getElementById('salesBox'); if (!box) return;
+  // Update computed lines without re-rendering inputs (keeps the keyboard open).
+  box.querySelectorAll('[data-work]').forEach((r, k) => {
+    const w = CUR.works[k], x = workCalc(CUR, w.price), c = curOf(CUR), line = r.querySelector('[data-wline]');
+    line.innerHTML = !money(w.price) ? 'Enter the sale price' : x.net === null ? 'Add the commission rate to see what you receive'
+      : `${cash(x.price, c)} − ${cash(x.comm, c)} commission${x.vat ? ` − ${cash(x.vat, c)} VAT` : ''} = <b style="color:var(--gold)">${cash(x.net, c)}</b> to you`;
+  });
+  if (!keepFocus) box.innerHTML = salesHTML(CUR);
+  save();
 }
 
 /* ---------- Editor ---------- */
@@ -1148,6 +1234,9 @@ document.addEventListener('click', async e => {
     case 'refresh': refreshArtquest(true); break;
     case 'export': exportData(); break;
     case 'browse': openBrowse(); break;
+    case 'workAdd': readSales(); (CUR.works ||= []).push({ title: '', price: '', sold: false }); document.getElementById('salesBox').innerHTML = salesHTML(CUR);
+      document.querySelector('#salesBox [data-work]:last-of-type [data-w="title"]')?.focus(); save(); break;
+    case 'workDel': readSales(); CUR.works.splice(+t.dataset.k, 1); document.getElementById('salesBox').innerHTML = salesHTML(CUR); save(); break;
     case 'browseAll': {
       const g = browseGroups()[+t.dataset.g]; if (!g) break;
       const val = t.dataset.on === '1'; g[1].forEach(i => i.included = val); save(); renderBrowseList(); break;
@@ -1157,7 +1246,10 @@ document.addEventListener('click', async e => {
 $('#btnRefresh').addEventListener('click', () => refreshArtquest(true));
 $('#fab').addEventListener('click', () => { CUR = null; openEditor(null); });
 $('#q').addEventListener('input', e => { QUERY = e.target.value; renderCalls(); });
-document.addEventListener('input', e => { if (e.target.id === 'browseQ') { BROWSE.q = e.target.value; renderBrowseList(); } });
+document.addEventListener('input', e => {
+  if (e.target.id === 'browseQ') { BROWSE.q = e.target.value; renderBrowseList(); }
+  if (e.target.closest && e.target.closest('#salesBox') && (e.target.dataset.w === 'price' || e.target.id === 'commRate')) refreshSales(true);
+});
 document.addEventListener('change', e => {
   if (e.target.id === 'remInput') {
     const v = e.target.value.split(/[,\s]+/).map(Number).filter(n => Number.isInteger(n) && n > 0 && n <= 365);
@@ -1167,6 +1259,7 @@ document.addEventListener('change', e => {
   }
   if (e.target.id === 'notifyTime' && e.target.value) { DB.settings.notifyTime = e.target.value; save(); }
   if (e.target.id === 'importFile' && e.target.files[0]) importData(e.target.files[0]);
+  if (e.target.closest && e.target.closest('#salesBox') && (e.target.type === 'checkbox' || e.target.id === 'commRate')) { refreshSales(false); return; }
   if (e.target.dataset && e.target.dataset.inc) {
     const it = DB.items.find(i => i.id === e.target.dataset.inc);
     if (it) { it.included = e.target.checked; save(); renderBrowseList(); }

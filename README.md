@@ -2,7 +2,7 @@
 
 Personal Android app that tracks UK open calls for artists, plus US miniature exhibitions: deadlines, hand-in days, private views and fees. It adds dates to your calendar with reminders and shows a countdown widget on the home screen.
 
-**Build:** v0.3.2 (build 5, 2026-10-25) is shown on the Settings screen.
+**Build:** v0.4.0 (build 6, 2026-10-25) is shown on the Settings screen.
 
 ## What it does
 
@@ -16,7 +16,8 @@ Personal Android app that tracks UK open calls for artists, plus US miniature ex
 | Calendar | Writes directly to the Samsung or Google calendar you choose, with reminders 28, 7 and 1 days before (editable). A Google calendar shows in both apps. |
 | Widget | Home-screen countdown to the next deadline, followed by the one after it. |
 | Tracker | Interested → Preparing → Submitted → Pre-selected → Selected / Not selected → Delivered → Sold / Collected. |
-| Ledger | Fees, costs and income per call, with yearly net totals. |
+| Artwork & sales | Per call: list each artwork and its sale price. The app deducts the commission (pre-filled where the prospectus states it: RMS 40%, MPSGS 40%, MASF 35%; editable), with optional VAT on commission, and shows what you receive. Tick **Sold** to count it as received. US shows use $. |
+| Ledger | Per year: fees, costs, "If sold" (your share if every listed work sells) and "Received" (sold works + other income), with net so far and net if all sell. |
 | Backup | Export or import a JSON backup through the Android share sheet. |
 
 Each call carries a confidence label:
