@@ -5,6 +5,9 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -32,6 +35,23 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
+
+      - name: Name the APK with its version
+        id: ver
+        run: |
+          V=$(grep -oP 'versionName "\K[^"]+' android/app/build.gradle)
+          echo "version=$V" >> "$GITHUB_OUTPUT"
+          cp android/app/build/outputs/apk/debug/app-debug.apk "call-to-artists-v$V.apk"
+
+      - name: Publish as a GitHub Release (phone download page)
+        if: github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.ver.outputs.version }}
+          name: Call to Artists v${{ steps.ver.outputs.version }}
+          body: Install this APK over the previous version. Version shown in the app's Settings screen.
+          files: call-to-artists-v${{ steps.ver.outputs.version }}.apk
+          make_latest: true
 
       - uses: actions/upload-artifact@v4
         with:

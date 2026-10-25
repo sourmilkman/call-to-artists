@@ -26,7 +26,10 @@ Each call carries a confidence label:
 
 ## Get the APK
 
-**Option A: GitHub (no setup)**
+**Option A: phone download (easiest)**
+On the phone, open https://github.com/sourmilkman/call-to-artists/releases/latest and tap the `call-to-artists-vX.Y.Z.apk` file.
+
+**Option A2: build artifacts**
 Every push to `main` builds a debug APK. Go to **Actions → Build Android APK → latest run → Artifacts**, download the zip and unzip it. Install `app-debug.apk` on the phone; you'll need to allow installs from your browser or file manager.
 
 **Option B: Android Studio (Windows)**
