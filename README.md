@@ -2,7 +2,7 @@
 
 Personal Android app that tracks UK open calls for artists, plus US miniature exhibitions: deadlines, hand-in days, private views and fees. It adds dates to your calendar with reminders and shows a countdown widget on the home screen.
 
-**Build:** v0.3.1 (build 4, 2026-10-25) is shown on the Settings screen.
+**Build:** v0.3.2 (build 5, 2026-10-25) is shown on the Settings screen.
 
 ## What it does
 

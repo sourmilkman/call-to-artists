@@ -1,6 +1,6 @@
 {
   "name": "call-to-artists",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "private": true,
   "description": "Personal UK open-call deadline tracker for Android (Capacitor)",
   "scripts": {

@@ -99,6 +99,9 @@ main{padding:0 14px calc(90px + var(--bottom))}
 .ms-row .d b{display:block;font-weight:600;font-size:14px}
 .ms-row .d small{color:var(--muted);font-size:12.5px}
 .ms-row.past{opacity:.45}
+.ms-row.na .d b{color:var(--muted)}.ms-row.na .d small{font-style:italic}
+.kd{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;margin:8px 0 0;font-size:12.5px}
+.kd dt{color:var(--muted)}.kd dd{margin:0}.kd dd.na,.kd .na{color:var(--faint);font-style:italic}.kd dd.past{color:var(--faint);text-decoration:line-through}
 .statuses{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
 label.f{display:block;font-size:12.5px;color:var(--muted);margin:12px 0 4px}
 .in{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--panel);outline:none}
@@ -171,8 +174,8 @@ table.ledger tr.tot td{font-weight:700;color:var(--gold);border-bottom:none}
 /* =========================================================
    Call to Artists — personal open-call deadline tracker
    ========================================================= */
-const BUILD = 'v0.3.1 · build 4 · 2026-10-25';
-const SEED_VERSION = 3;
+const BUILD = 'v0.3.2 · build 5 · 2026-10-25';
+const SEED_VERSION = 4;
 const AQ_URL = 'https://artquest.org.uk/opportunities/';
 const STORE_KEY = 'cta.data.v1';
 
@@ -190,10 +193,19 @@ if (isNative) {
 /* ---------- Vocabulary ---------- */
 const MT = {
   open: 'Submissions open', deadline: 'Entry deadline', notify: 'Notification',
-  receiving: 'Receiving / handing-in', collection: 'Collection', pv: 'Private view',
+  receiving: 'Hand-in / receiving', collection: 'Collection of unsold work', pv: 'Private view',
   exhibition: 'Exhibition', other: 'Other date'
 };
-const MT_SHORT = { open:'Opens', deadline:'Deadline', notify:'Results', receiving:'Hand-in', collection:'Collect', pv:'Private view', exhibition:'Exhibition', other:'Date' };
+const MT_SHORT = { open:'Opens', deadline:'Deadline', notify:'Results', receiving:'Hand-in', collection:'Collection', pv:'Private view', exhibition:'Exhibition', other:'Date' };
+// The four dates every listing shows, in this order (blank = not announced).
+const CORE = [['deadline', 'Submission deadline'], ['receiving', 'Hand-in'], ['exhibition', 'Exhibition'], ['collection', 'Collection of unsold work']];
+const CORE_SET = new Set(CORE.map(([t]) => t));
+function coreShort(m){
+  if (!m) return '';
+  const f = d => parseISO(d).toLocaleDateString('en-GB', { day:'numeric', month:'short' });
+  const y = parseISO(m.end || m.date).getFullYear() !== new Date().getFullYear() ? ' ' + parseISO(m.end || m.date).getFullYear() : '';
+  return (m.end && m.end !== m.date ? f(m.date) + ' – ' + f(m.end) : f(m.date)) + y + (m.time ? ' · ' + m.time : '');
+}
 const REMIND_TYPES = ['deadline', 'receiving', 'open'];
 const STATUSES = [
   ['', 'Not tracking'], ['interested', 'Interested'], ['preparing', 'Preparing'], ['submitted', 'Submitted'],
@@ -267,7 +279,7 @@ const SEED = [
     url:'https://royal-miniature-society.org.uk/', source:'RMS exhibition information for members',
     sourceUrl:'https://royal-miniature-society.org.uk/wp-content/uploads/2026/08/Exhibition-Information-for-Members-Associates-and-Students.pdf',
     confidence:'confirmed', kind:'call', venue:'Alliston Centre, Royal Agricultural University, Cirencester', fee:'', prize:'', medium:'Miniatures', eligibility:'', platform:'',
-    milestones:[{type:'exhibition',date:'2026-10-24',end:'2026-11-02'}],
+    milestones:[{type:'deadline',date:'2026-08-28',label:'Online entry'},{type:'exhibition',date:'2026-10-24',end:'2026-11-02'}],
     notes:'Online entry deadline was 28 Aug 2026. 40% commission on sales. Add collection date when confirmed.' },
   { id:'rms-2027', title:'RMS Annual Exhibition 2027', organiser:'The Royal Society of Miniature Painters, Sculptors and Gravers',
     url:'https://royal-miniature-society.org.uk/', source:'', sourceUrl:'',
@@ -301,7 +313,7 @@ const SEED = [
     url:'https://sca-net.org/?p=13533', source:'SCAN listing posted by the SSA', sourceUrl:'https://sca-net.org/?p=13533',
     confidence:'listed', kind:'call', venue:'Royal Scottish Academy, Edinburgh', fee:'', prize:'', medium:'Painting, printmaking, photography, textiles, drawing, sculpture and more',
     eligibility:'Members and non-members; selected work must be for sale.', platform:'',
-    milestones:[{type:'notify',date:'2026-11-05',end:'2026-11-06',label:'Pre-selection results'},{type:'pv',date:'2027-02-13'},{type:'exhibition',date:'2027-02-14',end:'2027-03-10'}],
+    milestones:[{type:'deadline',date:'2026-10-07',time:'12:00'},{type:'notify',date:'2026-11-05',end:'2026-11-06',label:'Pre-selection results'},{type:'pv',date:'2027-02-13'},{type:'exhibition',date:'2027-02-14',end:'2027-03-10'}],
     notes:'Submissions closed 7 Oct 2026, 12 noon. Fees and size rules on the SSA website.' },
   { id:'uk-de-2027', defaultOff:true, title:'Discerning Eye 2027', organiser:'Discerning Eye',
     url:'https://www.discerningeye.org/exhibition', source:'Discerning Eye website', sourceUrl:'https://www.discerningeye.org/exhibition',
@@ -359,7 +371,7 @@ const SEED = [
     prize:'', medium:'Miniatures (painting, graphics, sculpture)',
     eligibility:'Image ≤ 25 sq in; outside frame ≤ 56 sq in; frame width and depth ≤ 1¼″; sculpture ≤ 6″ incl. base; life-size images not accepted; no plastic or easel-back frames; no giclée/digital/photographic work. Up to 3 works, all for sale (min $100). Membership not required.',
     platform:'Online entry form at mpsgs.org; work mailed to the Receiver',
-    milestones:[{type:'pv',date:'2026-11-21',time:'10:00',tz:'America/New_York',label:'Buyers Preview (10:00–12:00)'},{type:'exhibition',date:'2026-11-21',end:'2027-01-09'}],
+    milestones:[{type:'deadline',date:'2026-09-05',label:'Work, form and fee received'},{type:'pv',date:'2026-11-21',time:'10:00',tz:'America/New_York',label:'Buyers Preview (10:00–12:00)'},{type:'exhibition',date:'2026-11-21',end:'2027-01-09'}],
     notes:'Entry deadline was 5 Sep 2026 (receipt of work, form and fee). 40% commission. Venue closed between Christmas and New Year. Unsold mailed work is returned “within a reasonable time”; no fixed return date.' },
   { id:'us-mpsgs-94', region:'USA', title:'MPSGS 94th Annual Exhibition of Fine Art in Miniature (2027)', organiser:'Miniature Painters, Sculptors & Gravers Society of Washington, DC',
     url:'https://www.mpsgs.org', source:'MPSGS', sourceUrl:'https://www.mpsgs.org',
@@ -372,7 +384,7 @@ const SEED = [
     prize:'', medium:'Miniatures (2D and sculpture)',
     eligibility:'Image ≤ 25 sq in; frame ≤ 64 sq in with no side over 9″; ≤ 1 lb and ≤ 1″ deep; sculpture ≤ 8″ incl. base. Up to 6 works per entry fee (one may be NFS, at least one for sale). Open to non-members.',
     platform:'Electronic entry form at miniature-art.com; international entrants may pay by PayPal',
-    milestones:[{type:'notify',date:'2026-11-01',end:'2026-11-30',label:'Accepted works listed (during November)'},{type:'pv',date:'2027-01-16',label:'Collectors Preview'},{type:'other',date:'2027-01-17',label:'Awards Brunch & official opening'},{type:'exhibition',date:'2027-01-17',end:'2027-02-14'}],
+    milestones:[{type:'deadline',date:'2026-09-26',label:'Work, form and fee received (entry window 15 Aug – 26 Sep)'},{type:'notify',date:'2026-11-01',end:'2026-11-30',label:'Accepted works listed (during November)'},{type:'pv',date:'2027-01-16',label:'Collectors Preview'},{type:'other',date:'2027-01-17',label:'Awards Brunch & official opening'},{type:'exhibition',date:'2027-01-17',end:'2027-02-14'}],
     notes:'Entry window was 15 Aug – 26 Sep 2026 (receipt of work). 35% commission; sales and payouts in US dollars. Unaccepted and unsold work is returned after the show closes, with tracking.' },
   { id:'us-masf-53', region:'USA', title:'MASF 53rd Annual International Miniature Art Exhibition (2028 show)', organiser:'Miniature Art Society of Florida',
     url:'https://www.miniature-art.com', source:'MASF', sourceUrl:'https://www.miniature-art.com',
@@ -507,6 +519,17 @@ function renderChips(){
   $('#filterChips').innerHTML = defs.filter(([k]) => k !== 'new' || c.new)
     .map(([k, l]) => `<button class="chip ${FILTER === k ? 'on' : ''}" data-filter="${k}">${l}<span class="n">${c[k]}</span></button>`).join('');
 }
+function coreGrid(i){
+  const ms = i.milestones || [];
+  if (!ms.some(m => CORE_SET.has(m.type))) return '';
+  const t = today();
+  return `<dl class="kd">${CORE.map(([type, label]) => {
+    const list = ms.filter(m => m.type === type).sort((a, b) => a.date.localeCompare(b.date));
+    const m = list.find(x => (x.end || x.date) >= t) || list[list.length - 1];
+    const past = m && (m.end || m.date) < t;
+    return `<dt>${label === 'Collection of unsold work' ? 'Collection' : label === 'Submission deadline' ? 'Deadline' : label}</dt><dd class="${!m ? 'na' : past ? 'past' : ''}">${m ? esc(coreShort(m)) + (list.length > 1 ? ` <span class="na">+${list.length - 1}</span>` : '') : 'not announced'}</dd>`;
+  }).join('')}</dl>`;
+}
 function cardHTML(i){
   const k = keyMilestone(i);
   let count;
@@ -530,7 +553,7 @@ function cardHTML(i){
   const org = [i.organiser, i.venue].filter(Boolean).join(' · ');
   return `<button class="card" data-open="${esc(i.id)}">${count}<div style="min-width:0;flex:1">
     <h3>${esc(i.title)}</h3>${org ? `<p class="org">${esc(org)}</p>` : ''}
-    <p class="next">${next}</p><div class="tags">${tags.join('')}</div></div></button>`;
+    <p class="next">${next}</p>${coreGrid(i)}<div class="tags">${tags.join('')}</div></div></button>`;
 }
 function renderCalls(){
   renderChips();
@@ -652,12 +675,19 @@ function openDetail(id){
   if (i.discovered && !i.seen) { i.seen = true; save(); renderCalls(); }
   const t = today();
   const ms = (i.milestones || []).slice().sort((a, b) => a.date.localeCompare(b.date));
-  const msHTML = ms.length ? `<div class="ms">${ms.map(m => {
-      const past = (m.end || m.date) < t, idx = i.milestones.indexOf(m), inCal = i.cal && i.cal[mKey(m)];
-      const d = daysUntil(m.date);
-      return `<div class="ms-row ${past ? 'past' : ''}"><div class="d"><b>${esc(mLabel(m))}</b><small>${mWhen(m)}${past ? '' : ' · ' + countdownText(d)}</small></div>
-        ${past ? '' : `<button class="btn small ${inCal ? 'done' : ''}" data-act="cal" data-idx="${idx}">${inCal ? '✓ Added' : '+ Calendar'}</button>`}</div>`;
-    }).join('')}</div>` : '<p class="sub">No dates yet.</p>';
+  const msRow = (m, title) => {
+    const past = (m.end || m.date) < t, idx = i.milestones.indexOf(m), inCal = i.cal && i.cal[mKey(m)];
+    const sub = m.label && m.label !== title ? esc(m.label) + ' · ' : '';
+    return `<div class="ms-row ${past ? 'past' : ''}"><div class="d"><b>${esc(title)}</b><small>${sub}${mWhen(m)}${past ? ' · passed' : ' · ' + countdownText(daysUntil(m.date))}</small></div>
+      ${past ? '' : `<button class="btn small ${inCal ? 'done' : ''}" data-act="cal" data-idx="${idx}">${inCal ? '✓ Added' : '+ Calendar'}</button>`}</div>`;
+  };
+  const coreHTML = `<div class="ms">${CORE.map(([type, label]) => {
+    const list = ms.filter(m => m.type === type);
+    return list.length ? list.map(m => msRow(m, label)).join('')
+      : `<div class="ms-row na"><div class="d"><b>${label}</b><small>Not announced yet</small></div></div>`;
+  }).join('')}</div>`;
+  const others = ms.filter(m => !CORE_SET.has(m.type));
+  const msHTML = coreHTML + (others.length ? `<div class="section-h">Other dates</div><div class="ms">${others.map(m => msRow(m, mLabel(m))).join('')}</div>` : '');
   const facts = [['Venue', i.venue], ['Fee', i.fee], ['Prize', i.prize], ['Medium', i.medium], ['Eligibility', i.eligibility], ['Submit via', i.platform]]
     .filter(([, v]) => v).map(([k, v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join('');
   const conf = CONF[i.confidence];
@@ -726,7 +756,8 @@ function msEditRow(m, k){
 function openEditor(item, prefill){
   const isNew = !item;
   const i = item ? JSON.parse(JSON.stringify(item)) : { title:'', organiser:'', url:'', venue:'', fee:'', prize:'', medium:'', eligibility:'', platform:'', kind:'call', milestones:[], notes:'', ...(prefill || {}) };
-  if (!i.milestones.length) i.milestones.push({ type:'deadline', date:'' });
+  for (const [type] of CORE) if (!i.milestones.some(m => m.type === type)) i.milestones.push({ type, date:'' });
+  i.milestones.sort((a, b) => (CORE.findIndex(c => c[0] === a.type) + 1 || 9) - (CORE.findIndex(c => c[0] === b.type) + 1 || 9));
   const found = prefill && prefill._dates ? prefill._dates : [];
   openSheet(`
     <h2>${isNew ? 'Add a call' : 'Edit details'}</h2>
