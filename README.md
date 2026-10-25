@@ -2,14 +2,13 @@
 
 Personal Android app that tracks UK open calls for artists, plus US miniature exhibitions: deadlines, hand-in days, private views and fees. It adds dates to your calendar with reminders and shows a countdown widget on the home screen.
 
-**Build:** v0.3.0 (build 3, 2026-10-25) is shown on the Settings screen.
+**Build:** v0.3.1 (build 4, 2026-10-25) is shown on the Settings screen.
 
 ## What it does
 
 | Feature | How |
 |---|---|
 | Society and prize watch-list | Seeded with checked dates: NPG Portrait Award, Hilliard, Pastel Society, RBA, RI, RMS, plus RP, RA, Jackson's and RP Drawing as "expected". Unknown fields are left blank, never guessed. |
-| US miniature exhibitions | Open shows only: MPSGS (Washington DC) and MASF (Florida) with confirmed dates; Seaside Art Gallery (NC) and MonDak (MT) on the watch-list. Members-only shows are left out. Filter with the **USA** chip; US times show in ET and go into your calendar in UK time. |
 | US miniature exhibitions | Open shows only: MPSGS (Washington DC) and MASF (Florida) with confirmed dates; Seaside Art Gallery (NC) and MonDak (MT) on the watch-list. Members-only shows (Cider Painters of America, California Art Club) are left out. Filter with the **USA** chip; US times show in ET and go into your calendar in UK time. |
 | Browse exhibitions | Tick-box catalogue (Calls → Browse exhibitions, or Settings). Tick a society or prize to include it in your list, untick to hide it — notes and statuses are kept. Covers Mall Galleries societies (Pastel, RBA, RI, ROI, NEAC, RSMA, SWLA, SGFA, SWA, SBA, Discerning Eye, Hesketh Hubbard), RWS Open, SSA, VAS, RWA, RCA, RE IOPE and the US miniature shows. Not included: RBSA Annual (members only); Lynn Painter-Stainers (official site couldn't be verified). |
 | New calls | Reads the Artquest opportunities page on the phone (native HTTP, no server). Rechecks every 12 h when opened, and a daily background check sends a notification when new listings appear. |
@@ -53,4 +52,4 @@ Then click **Run ▶** with the S21 connected over USB (USB debugging on).
 
 - If Artquest changes its page layout, the reader can stop finding listings. Settings shows a warning when that happens.
 - Calendar events already added stay in your calendar if you edit or delete the call in the app.
-- Debug APKs are signed with a debug key. Uninstall before switching to a release-signed build.
+- Every build is signed with the same key (`android/app/cta-release.keystore`), so new APKs install over old ones. Don't replace that file, or Android will refuse the update. v0.3.0 and earlier used throwaway keys: uninstall those once before installing v0.3.1.
