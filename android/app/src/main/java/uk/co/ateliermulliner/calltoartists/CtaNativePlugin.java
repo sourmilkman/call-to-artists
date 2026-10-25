@@ -159,7 +159,7 @@ public class CtaNativePlugin extends Plugin {
     /**
      * Options: calendarId (string), title, description, location,
      * start "YYYY-MM-DD", end "YYYY-MM-DD" (inclusive, optional),
-     * time "HH:MM" (optional; makes a timed event in Europe/London), durationMin,
+     * time "HH:MM" (optional; timed event in tz, default Europe/London), durationMin,
      * reminders: [minutes before].
      */
     private void doAddEvent(PluginCall call) {
@@ -190,7 +190,8 @@ public class CtaNativePlugin extends Plugin {
 
         try {
             if (time != null && !time.isEmpty()) {
-                ZoneId zone = ZoneId.of("Europe/London");
+                String tz = call.getString("tz", "");
+                ZoneId zone = ZoneId.of(tz == null || tz.isEmpty() ? "Europe/London" : tz);
                 String[] hm = time.split(":");
                 LocalDateTime ldt = startDate.atTime(Integer.parseInt(hm[0]), Integer.parseInt(hm[1]));
                 long startMs = ldt.atZone(zone).toInstant().toEpochMilli();

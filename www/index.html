@@ -157,8 +157,8 @@ table.ledger tr.tot td{font-weight:700;color:var(--gold);border-bottom:none}
 /* =========================================================
    Call to Artists — personal open-call deadline tracker
    ========================================================= */
-const BUILD = 'v0.1.0 · build 1 · 2026-10-24';
-const SEED_VERSION = 1;
+const BUILD = 'v0.2.0 · build 2 · 2026-10-25';
+const SEED_VERSION = 2;
 const AQ_URL = 'https://artquest.org.uk/opportunities/';
 const STORE_KEY = 'cta.data.v1';
 
@@ -259,9 +259,44 @@ const SEED = [
   { id:'rp-drawing', title:'RP Drawing Prize', organiser:'Royal Society of Portrait Painters (RP)',
     url:'https://therp.co.uk/the-rp-drawing-prize/', source:'RP website', sourceUrl:'https://therp.co.uk/the-rp-drawing-prize/',
     confidence:'expected', kind:'watch', venue:'University of Hull Art Gallery', fee:'', prize:'£5,000', medium:'Drawing (portrait)', eligibility:'', platform:'',
-    milestones:[], notes:'Next cycle not announced. Previous deadline: 28 July, 5pm.' }
+    milestones:[], notes:'Next cycle not announced. Previous deadline: 28 July, 5pm.' },
+  /* ----- USA: open miniature exhibitions only (members-only shows excluded) ----- */
+  { id:'us-mpsgs-93', region:'USA', title:'MPSGS 93rd Annual International Exhibition of Fine Art in Miniature', organiser:'Miniature Painters, Sculptors & Gravers Society of Washington, DC',
+    url:'https://www.mpsgs.org', source:'MPSGS 2026 prospectus', sourceUrl:'https://www.mpsgs.org/exhibit/2026/MPSGS-ExhibitProspectus-2026.pdf',
+    confidence:'confirmed', kind:'call', venue:'The Mansion at Strathmore, North Bethesda, MD',
+    fee:'$35 members · $40 non-members (hand-deliver) · $55 non-members (mailed) · +$15 return outside the US',
+    prize:'', medium:'Miniatures (painting, graphics, sculpture)',
+    eligibility:'Image ≤ 25 sq in; outside frame ≤ 56 sq in; frame width and depth ≤ 1¼″; sculpture ≤ 6″ incl. base; life-size images not accepted; no plastic or easel-back frames; no giclée/digital/photographic work. Up to 3 works, all for sale (min $100). Membership not required.',
+    platform:'Online entry form at mpsgs.org; work mailed to the Receiver',
+    milestones:[{type:'pv',date:'2026-11-21',time:'10:00',tz:'America/New_York',label:'Buyers Preview (10:00–12:00)'},{type:'exhibition',date:'2026-11-21',end:'2027-01-09'}],
+    notes:'Entry deadline was 5 Sep 2026 (receipt of work, form and fee). 40% commission. Venue closed between Christmas and New Year. Unsold mailed work is returned “within a reasonable time”; no fixed return date.' },
+  { id:'us-mpsgs-94', region:'USA', title:'MPSGS 94th Annual Exhibition of Fine Art in Miniature (2027)', organiser:'Miniature Painters, Sculptors & Gravers Society of Washington, DC',
+    url:'https://www.mpsgs.org', source:'MPSGS', sourceUrl:'https://www.mpsgs.org',
+    confidence:'expected', kind:'watch', venue:'', fee:'', prize:'', medium:'Miniatures', eligibility:'', platform:'', milestones:[],
+    notes:'2027 prospectus not yet published. 2026 cycle for reference: work accepted from 8 Aug, deadline 5 Sep (receipt in the US); show late Nov to early Jan. Allow international shipping time.' },
+  { id:'us-masf-52', region:'USA', title:'MASF 52nd Annual International Miniature Art Exhibition', organiser:'Miniature Art Society of Florida',
+    url:'https://www.miniature-art.com', source:'MASF 2027 prospectus', sourceUrl:'https://miniature-art.com/2027/2027_Exhibition_Prospectus.pdf',
+    confidence:'confirmed', kind:'call', venue:'Dunedin Fine Arts Center, Dunedin, FL',
+    fee:'$40 members · $50 non-members · $35 handling for return outside the US',
+    prize:'', medium:'Miniatures (2D and sculpture)',
+    eligibility:'Image ≤ 25 sq in; frame ≤ 64 sq in with no side over 9″; ≤ 1 lb and ≤ 1″ deep; sculpture ≤ 8″ incl. base. Up to 6 works per entry fee (one may be NFS, at least one for sale). Open to non-members.',
+    platform:'Electronic entry form at miniature-art.com; international entrants may pay by PayPal',
+    milestones:[{type:'notify',date:'2026-11-01',end:'2026-11-30',label:'Accepted works listed (during November)'},{type:'pv',date:'2027-01-16',label:'Collectors Preview'},{type:'other',date:'2027-01-17',label:'Awards Brunch & official opening'},{type:'exhibition',date:'2027-01-17',end:'2027-02-14'}],
+    notes:'Entry window was 15 Aug – 26 Sep 2026 (receipt of work). 35% commission; sales and payouts in US dollars. Unaccepted and unsold work is returned after the show closes, with tracking.' },
+  { id:'us-masf-53', region:'USA', title:'MASF 53rd Annual International Miniature Art Exhibition (2028 show)', organiser:'Miniature Art Society of Florida',
+    url:'https://www.miniature-art.com', source:'MASF', sourceUrl:'https://www.miniature-art.com',
+    confidence:'expected', kind:'watch', venue:'Dunedin Fine Arts Center, Dunedin, FL', fee:'', prize:'', medium:'Miniatures', eligibility:'', platform:'', milestones:[],
+    notes:'Next prospectus not yet published. Last cycle: work received 15 Aug – 26 Sep, show mid-January to mid-February.' },
+  { id:'us-seaside-36', region:'USA', title:'Seaside Art Gallery 36th International Miniature Art Show (2027)', organiser:'Seaside Art Gallery',
+    url:'https://seasideart.com/collections/international-miniature-art-show', source:'Seaside Art Gallery', sourceUrl:'https://seasideart.com/collections/international-miniature-art-show',
+    confidence:'expected', kind:'watch', venue:'Seaside Art Gallery, Nags Head, NC', fee:'', prize:'', medium:'Miniatures', eligibility:'', platform:'', milestones:[],
+    notes:'2027 prospectus not yet published. 2026 (35th): work due by 22 Apr, show 2–30 May. 2025 rules for reference: $20 first entry, $15 each extra, max 3; frame ≤ 42 sq in and ≤ 3½″ deep; sculpture ≤ 6″; foreign entries add $25 return postage; 35% commission.' },
+  { id:'us-mondak-36', region:'USA', title:'MonDak Heritage Center 36th Miniature Art Show', organiser:'MonDak Heritage Center',
+    url:'https://mondakheritagecenter.org/events/miniature-art-show/', source:'MonDak Heritage Center', sourceUrl:'https://mondakheritagecenter.org/exhibits/',
+    confidence:'expected', kind:'watch', venue:'MonDak Heritage Center, Sidney, MT', fee:'', prize:'', medium:'Miniatures', eligibility:'', platform:'', milestones:[],
+    notes:'2026 dates not published at last check — the 2025 deadline was 28 Oct, so this year’s may be imminent or gone; check now. 2025 rules for reference: $10 first piece, $8 each extra; image ≤ 5×7″; 1/6 scale rule; sculpture ≤ 216 cu in; 30% commission.' }
 ];
-const SEED_FIELDS = ['title','organiser','url','source','sourceUrl','confidence','kind','venue','fee','prize','medium','eligibility','platform','milestones','notes'];
+const SEED_FIELDS = ['region','title','organiser','url','source','sourceUrl','confidence','kind','venue','fee','prize','medium','eligibility','platform','milestones','notes'];
 
 /* ---------- State ---------- */
 let DB = { seedVersion: 0, items: [], settings: {
@@ -288,12 +323,13 @@ const uid = () => 'u' + Date.now().toString(36) + Math.random().toString(36).sli
 function hash(s){ let h = 0; for (const c of s) h = (h * 31 + c.charCodeAt(0)) | 0; return (h >>> 0).toString(36); }
 let toastT;
 function toast(msg, ms = 2600){ const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), ms); }
+const TZ_SHORT = { 'America/New_York':'ET', 'America/Chicago':'CT', 'America/Denver':'MT', 'America/Los_Angeles':'PT' };
 const mKey = m => `${m.type}|${m.date}`;
 const mLabel = m => m.label || MT[m.type] || 'Date';
 function mWhen(m){
   let s = fmtDate(m.date, true);
   if (m.end && m.end !== m.date) s += ' – ' + fmtDate(m.end, true);
-  if (m.time) s += ' · ' + m.time;
+  if (m.time) s += ' · ' + m.time + (m.tz && TZ_SHORT[m.tz] ? ' ' + TZ_SHORT[m.tz] : '');
   return s;
 }
 function countdownText(d){ return d === 0 ? 'today' : d === 1 ? 'tomorrow' : d > 0 ? `in ${d} days` : `${-d} days ago`; }
@@ -321,8 +357,8 @@ function mergeSeed(){
   for (const s of SEED) {
     if ((DB.deletedSeed || []).includes(s.id)) continue;
     const ex = DB.items.find(i => i.id === s.id);
-    if (!ex) DB.items.push(blankUser({ ...JSON.parse(JSON.stringify(s)), seeded: true }));
-    else if (DB.seedVersion < SEED_VERSION && !ex.userEdited) for (const f of SEED_FIELDS) ex[f] = JSON.parse(JSON.stringify(s[f]));
+    if (!ex) DB.items.push(blankUser({ region: 'UK', ...JSON.parse(JSON.stringify(s)), seeded: true }));
+    else if (DB.seedVersion < SEED_VERSION && !ex.userEdited) for (const f of SEED_FIELDS) ex[f] = s[f] === undefined ? (f === 'region' ? 'UK' : '') : JSON.parse(JSON.stringify(s[f]));
   }
   DB.seedVersion = SEED_VERSION;
 }
@@ -352,6 +388,8 @@ function filtered(){
       case 'watch': return i.kind === 'watch' || !hasDates;
       case 'new': return i.discovered && !i.seen;
       case 'past': return hasDates && !up;
+      case 'uk': return (i.region || 'UK') === 'UK';
+      case 'usa': return i.region === 'USA';
       default: return true;
     }
   });
@@ -360,13 +398,14 @@ function filtered(){
   return list;
 }
 function renderChips(){
-  const c = { upcoming:0, watch:0, new:0, past:0, all:DB.items.length };
+  const c = { upcoming:0, watch:0, new:0, past:0, uk:0, usa:0, all:DB.items.length };
   for (const i of DB.items) {
     const up = upcoming(i).length > 0, has = (i.milestones || []).length > 0;
     if (up) c.upcoming++; if (i.kind === 'watch' || !has) c.watch++;
     if (i.discovered && !i.seen) c.new++; if (has && !up) c.past++;
+    if (i.region === 'USA') c.usa++; else c.uk++;
   }
-  const defs = [['upcoming','Upcoming'],['watch','Watch-list'],['new','New'],['past','Past'],['all','All']];
+  const defs = [['upcoming','Upcoming'],['watch','Watch-list'],['new','New'],['uk','UK'],['usa','USA'],['past','Past'],['all','All']];
   $('#filterChips').innerHTML = defs.filter(([k]) => k !== 'new' || c.new)
     .map(([k, l]) => `<button class="chip ${FILTER === k ? 'on' : ''}" data-filter="${k}">${l}<span class="n">${c[k]}</span></button>`).join('');
 }
@@ -388,6 +427,7 @@ function cardHTML(i){
   if (i.confidence) tags.push(`<span class="tag ${i.confidence === 'listed' ? 'warn' : ''}">${esc(CONF[i.confidence]?.[0] || '')}</span>`);
   if (i.fee) tags.push(`<span class="tag">${esc(i.fee)}</span>`);
   if (i.source === 'Artquest') tags.push('<span class="tag">Artquest</span>');
+  if (i.region === 'USA') tags.push('<span class="tag">USA</span>');
   if (Object.keys(i.cal || {}).length) tags.push('<span class="tag gold">In calendar</span>');
   const org = [i.organiser, i.venue].filter(Boolean).join(' · ');
   return `<button class="card" data-open="${esc(i.id)}">${count}<div style="min-width:0;flex:1">
@@ -674,7 +714,7 @@ function reminderMinutes(m){
 function eventPayload(i, m){
   const lines = [i.organiser, i.venue && 'Venue: ' + i.venue, i.fee && 'Fee: ' + i.fee, i.platform && 'Submit via: ' + i.platform, i.url, '', 'Added by Call to Artists'].filter(x => x !== undefined && x !== null && x !== false);
   return { title: `${MT_SHORT[m.type] || 'Date'}: ${i.title}`, description: lines.join('\n'), location: i.venue || '',
-    start: m.date, end: m.end || '', time: m.time || '', durationMin: 30, reminders: reminderMinutes(m) };
+    start: m.date, end: m.end || '', time: m.time || '', tz: m.tz || '', durationMin: 30, reminders: reminderMinutes(m) };
 }
 async function addToCalendar(i, m, quiet){
   if (!isNative) { webCalendar(i, m); return false; }
@@ -703,7 +743,7 @@ function webCalendar(i, m){
     dates = `${f(st)}/${f(en)}`;
   }
   else dates = `${d(m.date)}/${d(next(m.end || m.date))}`;
-  const g = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(p.title)}&dates=${dates}&details=${encodeURIComponent(p.description)}&location=${encodeURIComponent(p.location)}&ctz=Europe/London`;
+  const g = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(p.title)}&dates=${dates}&details=${encodeURIComponent(p.description)}&location=${encodeURIComponent(p.location)}&ctz=${encodeURIComponent(m.tz || 'Europe/London')}`;
   window.open(g, '_blank');
 }
 
